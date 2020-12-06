@@ -38,7 +38,8 @@
 
         #dv-top {
             width: 100%;
-            padding: 1rem;
+            padding: 0;
+            margin-bottom: 1.5em;;
         }
 
         #dv-score-wrapper {
@@ -48,36 +49,47 @@
         .shadowed {
             position: relative;
             margin-bottom: 2rem;
+            box-shadow: 0 10px 10px -8px #999;
         }
 
-        .shadowed:before, .shadowed:after {
-            z-index: -1;
-            position: absolute;
-            content: "";
-            bottom: 15px;
-            left: 10px;
-            width: 50%;
-            top: 80%;
-            max-width: 300px;
-            background: #999;
-            -webkit-box-shadow: 0 15px 10px #999;
-            -moz-box-shadow: 0 15px 10px #999;
-            box-shadow: 0 15px 10px #999;
-            -webkit-transform: rotate(-3deg);
-            -moz-transform: rotate(-3deg);
-            -o-transform: rotate(-3deg);
-            -ms-transform: rotate(-3deg);
-            transform: rotate(-3deg);
+        /* top menu */
+        .dv-score-menu {
+            margin-bottom: 1.5em;
         }
 
-        .shadowed:after {
-            -webkit-transform: rotate(3deg);
-            -moz-transform: rotate(3deg);
-            -o-transform: rotate(3deg);
-            -ms-transform: rotate(3deg);
-            transform: rotate(3deg);
-            right: 10px;
-            left: auto;
+        .btn-group {
+            width: fit-content;
+            display: inline-block;
+            margin-right: 1em;
+        }
+
+        .btn-group button {
+            position: relative;
+            border: 1px solid #eeeeee;
+            padding: 6px 10px;
+            cursor: pointer;
+            background-color: #f6f7f6;
+            z-index: 1;
+            margin-right: 4px;
+            top: -2px;
+            box-shadow: 0 5px 5px -4px #999;
+            transition: all 100ms;
+        }
+
+        .btn-group button:focus {
+            top: 0;
+            outline: none;
+            z-index: 2;
+            box-shadow: none;
+            background-color: #f0f0f0;
+        }
+
+        .btn-group button img {
+            height: 1.5em;
+        }
+
+        .btn-group button:not(:last-child) {
+            /*border-right: none;*/
         }
     </style>
 </head>
@@ -85,14 +97,14 @@
 <div class="dv-main-wrapper">
     <div class="dv-center-content">
         <div id="dv-top">
-            Aşağıdaki menüden notalarınızı yazın!
+            Merhaba, aşağıdaki menüden notalarınızı yazıp paylaşabilirsiniz!
         </div>
         <div id="dv-score-wrapper"></div>
-        <div id="dv-tmm-wrapper" class="shadowed"></div>
+        <div id="dv-tmm-wrapper"></div>
     </div>
 </div>
 <script type="text/javascript">
-
+    /*
     VF = Vex.Flow;
 
     let div = document.getElementById("dv-score-wrapper");
@@ -130,7 +142,66 @@
     ];
 
     VF.Formatter.FormatAndDraw(context, stave, notes);
+    */
 
+    function createTMMMenu(containerSelector) {
+        let scoreMenu = document.createElement('div');
+        scoreMenu.setAttribute('id', 'dv-score-menu');
+        scoreMenu.className = 'dv-score-menu';
+
+        let dvGroupAcc = document.createElement('div');
+        dvGroupAcc.className = 'btn-group';
+
+        let btnB8 = document.createElement('button');
+        btnB8.innerHTML = '<img alt="b8" src="static/img/b8.svg">';
+
+        let btnB5 = document.createElement('button');
+        btnB5.innerHTML = '<img alt="b8" src="static/img/b5.svg">';
+
+        let btnB4 = document.createElement('button');
+        btnB4.innerHTML = '<img alt="b8" src="static/img/b4.svg">';
+
+        let btnB1 = document.createElement('button');
+        btnB1.innerHTML = '<img alt="b8" src="static/img/b1.svg">';
+
+        let btnD1 = document.createElement('button');
+        btnD1.innerHTML = '<img alt="b8" src="static/img/d1.svg">';
+
+        let btnD4 = document.createElement('button');
+        btnD4.innerHTML = '<img alt="b8" src="static/img/d4.svg">';
+
+        let btnD5 = document.createElement('button');
+        btnD5.innerHTML = '<img alt="b8" src="static/img/d5.svg">';
+
+        let btnD8 = document.createElement('button');
+        btnD8.innerHTML = '<img alt="b8" src="static/img/d8.svg">';
+
+        dvGroupAcc.appendChild(btnB8);
+        dvGroupAcc.appendChild(btnB5);
+        dvGroupAcc.appendChild(btnB4);
+        dvGroupAcc.appendChild(btnB1);
+        dvGroupAcc.appendChild(btnD1);
+        dvGroupAcc.appendChild(btnD4);
+        dvGroupAcc.appendChild(btnD5);
+        dvGroupAcc.appendChild(btnD8);
+
+        let dvGroupNums = document.createElement('div');
+        dvGroupNums.className = 'btn-group';
+
+        let btn0 = document.createElement('button');
+        btn0.innerHTML = '<img alt="b8" src="static/img/0.svg">';
+
+        let btn1 = document.createElement('button');
+        btn1.innerHTML = '<img alt="b8" src="static/img/1.svg">';
+
+        dvGroupNums.appendChild(btn0);
+        dvGroupNums.appendChild(btn1);
+
+        scoreMenu.appendChild(dvGroupAcc);
+        scoreMenu.appendChild(dvGroupNums);
+
+        document.querySelector(containerSelector).append(scoreMenu);
+    }
 
     const symbols = {
         b8: "M 0,0.33443646 M 0.0072,-3.1402835 v 0.535686 c 0,0.04343 0.02172,0.07963 0.07963,0.07963 0.01447,0 0.463296,-0.166497 0.485013,-0.173736 0.05067,0 0.07239,0.02896 0.07239,0.05067 0,0.09411 0,0.188214 0.01447,0.260604 0,0.08687 -0.01447,0.108585 -0.06515,0.123063 -0.04343,0.02172 -0.477774,0.202692 -0.477774,0.202692 -0.07239,0 -0.108585,0.02172 -0.108585,0.07239 v 0.528447 c 0,0.04343 0.02172,0.08687 0.08687,0.08687 0.02172,0 0.419862,-0.159258 0.477774,-0.188214 0.07239,0 0.09411,0.04343 0.09411,0.07963 0.02172,1.65049196 0.06515,3.5253929 0.108585,3.5688269 0.02896,0.05067 0.05791,0.06515 0.09411,0.06515 0.02896,0 0.05791,-0.02172 0.05791,-0.02172 0.311277,-0.166497 0.571881,-0.463296 0.810768,-0.637032 0.919353,-0.64427097 1.252347,-1.27406394 1.252347,-1.76631593 0,-0.59359797 -0.456057,-0.95554797 -0.933831,-0.98450397 -0.180975,0 -0.398145,0.07963 -0.557403,0.173736 -0.07963,0.04343 -0.166497,0.14478 -0.260604,0.14478 -0.0072,0 -0.02172,-0.0072 -0.02896,-0.0072 -0.07239,-0.02896 -0.115824,-0.108585 -0.115824,-0.188214 0,-0.05067 0,-0.238887 0.01447,-0.477774 0,-0.04343 0,-0.14478 0.07239,-0.166497 0.07239,-0.03619 1.469517,-0.542925 1.469517,-0.542925 0.05791,-0.02172 0.09411,-0.06515 0.09411,-0.115824 v -0.4994909 c 0,-0.04343 -0.01447,-0.08687 -0.06515,-0.08687 -0.02896,0 -1.4478,0.521208 -1.491234,0.542925 -0.0073,0 -0.05791,-0.02896 -0.05791,-0.05067 0.0072,-0.09411 0.0072,-0.231648 0.0072,-0.28956 0,-0.06515 0.02896,-0.09411 0.07239,-0.115824 0.04343,-0.02172 1.440561,-0.5356861 1.440561,-0.5356861 0.05791,-0.01448 0.09411,-0.05791 0.09411,-0.101346 v -0.513969 c 0,-0.0362 -0.01447,-0.07963 -0.06515,-0.07963 -0.02896,0 -1.418844,0.50673 -1.4478,0.521208 -0.05067,0 -0.07239,-0.02896 -0.07239,-0.05067 0,-0.202692 0.0072,-0.325755 0.0072,-0.369189 0,-0.115824 -0.09411,-0.166497 -0.195453,-0.166497 -0.14478,0 -0.311277,0.108585 -0.325755,0.296799 v 0.448818 c 0,0.01448 -0.0072,0.07239 -0.05791,0.07963 -0.03619,0.02172 -0.470535,0.188214 -0.470535,0.188214 -0.07239,0.0072 -0.108585,0.04343 -0.108585,0.07963 m 1.107567,2.94627299 c 0.04343,-0.137541 0.311277,-0.369189 0.470535,-0.44881797 0.09411,-0.04343 0.173736,-0.06515 0.260604,-0.06515 0.101346,0 0.195453,0.02896 0.267843,0.101346 0.09411,0.11582397 0.159258,0.28232097 0.159258,0.49225197 0,0.57188097 -0.456057,1.12928391 -0.926592,1.40436591 -0.04343,0.02172 -0.07239,0.03619 -0.09411,0.03619 -0.08687,0 -0.115824,-0.108585 -0.115824,-0.166497 0,0 -0.02896,-0.66598797 -0.02896,-1.07861094 0,-0.130302 0,-0.23888697 0.0072,-0.27508197",
@@ -236,7 +307,6 @@
             return plh * 6 * (notes.length + 2);
         };
     }
-
 
     function SatirObject(paper, configs, left, top, width) {
         this.paper = paper;
@@ -354,7 +424,6 @@
         }
     }
 
-
     function TmmScore(containerSelector) {
         let configs = {
             padding: {top: 20, right: 20, bottom: 20, left: 20},
@@ -373,9 +442,12 @@
             scorePaperWidth = windowWidth - 100;
         }
 
+        createTMMMenu(containerSelector);
+
         let svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         let svgID = 'svg-tmm-score';
         svgElem.setAttribute('id', svgID);
+        svgElem.setAttribute('class', 'shadowed');
         svgElem.style.backgroundColor = configs.paperBgColor;
         svgElem.style.width = scorePaperWidth + 'px';
 
@@ -452,7 +524,6 @@
             }
         };
     }
-
 
     let tmmScore = new TmmScore('#dv-tmm-wrapper');
 
