@@ -104,8 +104,10 @@
     </div>
 </div>
 <script type="text/javascript">
+    "use strict";
+
     function vexTest() {
-        VF = Vex.Flow;
+        let VF = Vex.Flow;
 
         let div = document.getElementById("dv-score-wrapper");
         let width = div.offsetWidth * 2;
@@ -331,11 +333,11 @@
 
         this.getNote = function () {
             return this.noteRoot + this.noteOctave;
-        }
+        };
 
         this.getAcc = function () {
             return this.noteComma;
-        }
+        };
 
         this.getPathStr = function (durStr) {
             let path;
@@ -363,9 +365,9 @@
                     break;
             }
             return path;
-        }
+        };
 
-        this.draw = function (paper, porteLiHe, lThickness, left, top, color) {
+        this.drawNote = function (paper, porteLiHe, lThickness, left, top, color) {
             let noteG = paper.g();
             let path = this.getPathStr(this.durStr);
             let noteBody = paper.path(path);
@@ -381,7 +383,7 @@
             noteG.add(noteBody);
 
             return noteG;
-        }
+        };
 
         this.getWidth = function (porteLiHe, paper) {
             let scaleFactor = porteLiHe / 5;
@@ -390,16 +392,10 @@
             let width = noteBody.getBBox().width * scaleFactor;
             noteBody.remove();
             return width;
-        }
+        };
     }
 
-    function Measure(timeSig) {
-        let parts = timeSig.split('/');
-        let timeSignature = {
-            num: parseInt(parts[0]),
-            den: parseInt(parts[1])
-        };
-
+    function Measure() {
         this.notes = [];
 
         this.addNote = function (pitch, dur) {
@@ -412,7 +408,7 @@
         };
 
         this.toStr = function () {
-            return [timeSignature.num, timeSignature.den].join(':');
+            return "";
         };
 
         this.getRequiredWidth = function (porteLiHe, paper) {
@@ -424,7 +420,7 @@
             return Math.max(minWidth, porteLiHe * 1.5 * 10);
         };
 
-        this.draw = function (sParams) {
+        this.drawMeasure = function (sParams) {
             let paper = sParams.paper;
             let left = sParams.startLeft;
             let top = sParams.startTop;
@@ -434,10 +430,25 @@
             let lThickness = sParams.cfg.lineThickness;
 
             for (let note of this.notes) {
-                let noteG = note.draw(paper, porteLiHe, lThickness, left, top, color);
+                let noteG = note.drawNote(paper, porteLiHe, lThickness, left, top, color);
                 left += noteG.getBBox().width + porteLiHe * 1.5;
             }
-        }
+
+            if (this.notes.length === 0) {
+                left += porteLiHe * 1.5 * 10;
+            }
+
+            let x1 = left;
+            let y1 = top;
+            let y2 = top + porteLiHe * 4;
+            let mLine = paper.line(x1, y1, x1, y2);
+            mLine.attr({
+                stroke: sParams.cfg.porteLineColor,
+                strokeWidth: sParams.cfg.lineThickness
+            });
+
+            return left;
+        };
     }
 
     function SatirObject(paper, configs, left, top, width) {
@@ -452,13 +463,14 @@
         this.solAnahtari = null;
         this.measures = [];
 
+        let porteLiHe = this.configs.porteLineHeight;
+        let porteHeight = 4 * porteLiHe;
+
         this.addMeasure = function (measure) {
             this.measures.push(measure);
         };
 
-        this.draw = function (accidentals, timeSig) {
-            // 5 lines
-
+        this.drawLines = function () {
             for (let i = 0; i < 5; i++) {
                 let x1 = this.left;
                 let y1 = this.top + i * this.configs.porteLineHeight;
@@ -473,9 +485,6 @@
 
                 this.lines.push(line);
             }
-
-            let porteLiHe = this.configs.porteLineHeight;
-            let porteHeight = 4 * porteLiHe;
 
             // left & right vertical lines
             let x1 = this.left;
@@ -493,7 +502,9 @@
                 stroke: this.configs.porteLineColor,
                 strokeWidth: this.configs.lineThickness
             });
+        };
 
+        this.drawClef = function () {
             let leftUsablePos = this.left;
 
             // clef
@@ -516,22 +527,24 @@
                 fill: this.configs.mainColor
             });
 
-            leftUsablePos = this.left + offsetLeft + porteLiHe * 1.5;
+            return (this.left + offsetLeft + porteLiHe * 1.5);
+        };
+
+        this.drawAccidentals = function (accidentals, leftUsablePos) {
             let lastAccWidth = 0;
 
-            // accidentals
             for (let i = 0; i < accidentals.notes.length; i++) {
                 let note = accidentals.notes[i];
                 let notePos = notePositions[note.getNote()];
 
                 let accPath = symbols[note.getAcc()];
                 let accSymbol = this.paper.path(accPath);
-                scaleFactor = parseFloat((porteLiHe / 3.25).toFixed(2));
+                let scaleFactor = parseFloat((porteLiHe / 3.25).toFixed(2));
 
                 let top = this.top + (notePos * porteLiHe);
 
-                translateStr = 't ' + leftUsablePos + ' ' + top;
-                scaleStr = 's' + scaleFactor + ' 0 0';
+                let translateStr = 't ' + leftUsablePos + ' ' + top;
+                let scaleStr = 's' + scaleFactor + ' 0 0';
                 accSymbol.transform(translateStr + ' ' + scaleStr);
                 accSymbol.attr({
                     fill: this.configs.mainColor
@@ -540,12 +553,16 @@
                 leftUsablePos += lastAccWidth + porteLiHe / 2;
             }
 
-            // meter
+            return leftUsablePos;
+        };
+
+        this.drawMeter = function (leftUsablePos, timeSig) {
             leftUsablePos += porteLiHe / 2;
-            scaleFactor = parseFloat((porteLiHe / 2.5).toFixed(2));
+            let scaleFactor = parseFloat((porteLiHe / 2.5).toFixed(2));
             let numElems = ('' + timeSig.num).split('');
             let locLeft = 0;
             let numG = this.paper.g();
+            let translateStr, scaleStr;
             for (let n of numElems) {
                 let numElem = this.paper.path(symbols.numbers[parseInt(n)]);
                 numG.add(numElem);
@@ -580,6 +597,16 @@
 
             // measures
             leftUsablePos += Math.max(numG.getBBox().width, denG.getBBox().width) + porteLiHe * 2;
+            return leftUsablePos;
+        };
+
+        this.drawSatir = function (accidentals, timeSig) {
+            let leftUsablePos = this.left + porteLiHe;
+
+            this.drawLines();
+            leftUsablePos = this.drawClef();
+            leftUsablePos = this.drawAccidentals(accidentals, leftUsablePos);
+            leftUsablePos = this.drawMeter(leftUsablePos, timeSig);
 
             let sParams = {
                 startLeft: Math.round(leftUsablePos * 100) / 100,
@@ -590,9 +617,10 @@
             };
 
             for (let measure of this.measures) {
-                measure.draw(sParams);
+                leftUsablePos = measure.drawMeasure(sParams);
+                sParams.startLeft = leftUsablePos;
             }
-        }
+        };
     }
 
     function TmmScore(containerSelector) {
@@ -604,7 +632,7 @@
             mainColor: "#3b4552",
             porteLineColor: "#4e5872",
             paperBgColor: "#f6f7f6",
-            initialSatirCount: 2
+            defMeasureCount: 4
         };
 
         // prep work
@@ -662,13 +690,17 @@
             measures.push(measure);
         };
 
-        this.init = function () {
+        this.initScore = function () {
             // create satir objects
             let pLeft = configs.padding.left;
             let pRight = configs.padding.right;
             let pTop = configs.padding.top;
             let satirWidth = scorePaperWidth - pLeft - pRight;
             let numOfReqLines = 1;
+
+            while (measures.length < configs.defMeasureCount) {
+                measures.push(new Measure());
+            }
 
             let remainingWidth = satirWidth;
             let offsetTop = pTop + (6 * configs.porteLineHeight);
@@ -692,9 +724,9 @@
             // eof satir objects
         };
 
-        this.draw = function () {
+        this.drawScore = function () {
             for (let satir of satirlar) {
-                satir.draw(accidentals[0], timeSignatures[0]);
+                satir.drawSatir(accidentals[0], timeSignatures[0]);
             }
         };
     }
@@ -704,7 +736,7 @@
     tmmScore.setAccidentals(['B4b4', 'F5#4', 'C5#4']);
     tmmScore.setMeter('9/8');
 
-    let measure = new Measure('9/8');
+    let measure = new Measure();
     measure.addNote('La4', '1/32');
     measure.addNote('Si4b4', '1/16');
     measure.addNote('Do5#4', '1/8');
@@ -717,12 +749,9 @@
     measure.addNote('Do5#4', '1/8');
 
     tmmScore.addMeasure(measure);
-    tmmScore.addMeasure(new Measure('9/8'));
-    tmmScore.addMeasure(new Measure('9/8'));
-    tmmScore.addMeasure(new Measure('9/8'));
 
-    tmmScore.init();
-    tmmScore.draw();
+    tmmScore.initScore();
+    tmmScore.drawScore();
 
 </script>
 </body>
