@@ -48,3 +48,81 @@ table {
     border-spacing: 0;
 }
 
+html, body {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12pt;
+    color: #333841;
+    height: 100%;
+}
+
+body {
+    overflow-y: scroll;
+    background-color: #fff;
+}
+
+.dv-main-wrapper {
+    display: flex;
+    justify-content: center;
+    height: 100%;
+}
+
+.dv-center-content {
+    padding-top: 1rem;
+    width: auto;
+}
+
+#dv-top {
+    width: 100%;
+    padding: 0;
+    margin-bottom: 1.5em;;
+}
+
+#dv-score-wrapper {
+    width: 100%;
+}
+
+.shadowed {
+    position: relative;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 10px -8px #999;
+}
+
+/* top menu */
+.dv-score-menu {
+    margin-bottom: 1.5em;
+}
+
+.btn-group {
+    width: fit-content;
+    display: inline-block;
+    margin-right: 1em;
+}
+
+.btn-group button {
+    position: relative;
+    border: 1px solid #eeeeee;
+    padding: 6px 10px;
+    cursor: pointer;
+    background-color: #f6f7f6;
+    z-index: 1;
+    margin-right: 4px;
+    top: -2px;
+    box-shadow: 0 5px 5px -4px #999;
+    transition: all 100ms;
+}
+
+.btn-group button:focus {
+    top: 0;
+    outline: none;
+    z-index: 2;
+    box-shadow: none;
+    background-color: #ebebeb;
+}
+
+.btn-group button img {
+    height: 1.5em;
+}
+
+.btn-group button:not(:last-child) {
+    /*border-right: none;*/
+}

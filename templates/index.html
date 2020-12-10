@@ -12,86 +12,6 @@
     <script type="text/javascript" src="{{ url_for('static', filename='js/vexflow-debug.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/snap.svg.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/site.css') }}">
-    <style type="text/css">
-        html, body {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12pt;
-            color: #333841;
-            height: 100%;
-        }
-
-        body {
-            overflow-y: scroll;
-            background-color: #fff;
-        }
-
-        .dv-main-wrapper {
-            display: flex;
-            justify-content: center;
-            height: 100%;
-        }
-
-        .dv-center-content {
-            padding-top: 1rem;
-            width: auto;
-        }
-
-        #dv-top {
-            width: 100%;
-            padding: 0;
-            margin-bottom: 1.5em;;
-        }
-
-        #dv-score-wrapper {
-            width: 100%;
-        }
-
-        .shadowed {
-            position: relative;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 10px -8px #999;
-        }
-
-        /* top menu */
-        .dv-score-menu {
-            margin-bottom: 1.5em;
-        }
-
-        .btn-group {
-            width: fit-content;
-            display: inline-block;
-            margin-right: 1em;
-        }
-
-        .btn-group button {
-            position: relative;
-            border: 1px solid #eeeeee;
-            padding: 6px 10px;
-            cursor: pointer;
-            background-color: #f6f7f6;
-            z-index: 1;
-            margin-right: 4px;
-            top: -2px;
-            box-shadow: 0 5px 5px -4px #999;
-            transition: all 100ms;
-        }
-
-        .btn-group button:focus {
-            top: 0;
-            outline: none;
-            z-index: 2;
-            box-shadow: none;
-            background-color: #ebebeb;
-        }
-
-        .btn-group button img {
-            height: 1.5em;
-        }
-
-        .btn-group button:not(:last-child) {
-            /*border-right: none;*/
-        }
-    </style>
 </head>
 <body>
 <div class="dv-main-wrapper">
@@ -309,7 +229,7 @@
 
     };
 
-    function Note(pitch, duration) {
+    function Note(pitch, duration, cfg) {
         this.noteRoot = '';
         this.noteOctave = 0;
         this.noteComma = '';
@@ -394,21 +314,49 @@
             return path;
         };
 
-        this.drawNote = function (paper, porteLiHe, lThickness, left, top, color) {
-            let noteG = paper.g();
-            let path = this.getPathStr(this.durStr);
-            let noteBody = paper.path(path);
+        this.drawNote = function (paper, porteLiHe, lThickness, left, top, color, lColor) {
+
             let portePos = notePositions[this.getNote()];
             let noteBodyTop = top + (lThickness / 2) + porteLiHe * portePos;
             left = Math.round(left * 100) / 100;
             noteBodyTop = Math.round(noteBodyTop * 100) / 100;
+
+            if (portePos <= -1) {
+                // higher than A5
+                let stepCount = Math.floor(Math.abs(portePos));
+                for (let i = 1; i <= stepCount; i++) {
+                    let lineTop = top - i * porteLiHe;
+                    let stepLine = paper.line(left - porteLiHe / 2, lineTop, left + porteLiHe * 3.5 / 2, lineTop);
+                    stepLine.attr({
+                        stroke: lColor,
+                        strokeWidth: lThickness
+                    });
+                }
+            }
+            if (portePos >= 5) {
+                // lower than C4
+                let stepCount = Math.floor(portePos - 4);
+                for (let i = 1; i <= stepCount; i++) {
+                    let lineTop = top + (i + 4) * porteLiHe;
+                    let stepLine = paper.line(left - porteLiHe / 2, lineTop, left + porteLiHe * 3.5 / 2, lineTop);
+                    stepLine.attr({
+                        stroke: lColor,
+                        strokeWidth: lThickness
+                    });
+                }
+            }
+
+            let path = this.getPathStr(this.durStr);
+            let noteBody = paper.path(path);
             let translateStr = 't ' + left + ' ' + noteBodyTop;
             let scaleFactor = porteLiHe / 5;
             let scaleStr = 's' + scaleFactor + ' 0 0';
+
             noteBody.transform(translateStr + ' ' + scaleStr);
             noteBody.attr({
-                fill: color
+                fill: 'color'
             });
+            let noteG = paper.g();
             noteG.add(noteBody);
 
             return noteG;
@@ -472,9 +420,10 @@
             let left = sParams.startLeft + porteLiHe * 1.5 + rw;
             let color = sParams.cfg.noteColor;
             let lThickness = sParams.cfg.lineThickness;
+            let lColor = sParams.cfg.porteLineColor;
 
             for (let note of this.notes) {
-                let noteG = note.drawNote(paper, porteLiHe, lThickness, left, top, color);
+                let noteG = note.drawNote(paper, porteLiHe, lThickness, left, top, color, lColor);
                 left += noteG.getBBox().width + porteLiHe * 1.5 + rw;
             }
 
@@ -817,12 +766,15 @@
     tmmScore.setMeter('9/8');
 
     let measure = new Measure();
-    measure.addNote('Sol4', '1/32');
+    measure.addNote('Si3', '1/32');
+    measure.addNote('Do4', '1/8');
+    measure.addNote('Re4', '1/8');
     measure.addNote('La4', '1/16');
     measure.addNote('Si4b4', '1/8');
     measure.addNote('Do5#4', '1/4');
     measure.addNote('Re5', '1/2');
-    measure.addNote('Mi5', '1/1');
+    measure.addNote('Sol5', '1/1');
+    measure.addNote('Do6#4', '1/4');
 
     tmmScore.addMeasure(measure);
 

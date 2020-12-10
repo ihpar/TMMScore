@@ -2,6 +2,7 @@
 /node_modules/
 /Include/
 /Scripts/
+/Lib/
 /package.json
 /package-lock.json
 /pyvenv.cfg
