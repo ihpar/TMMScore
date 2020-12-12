@@ -331,12 +331,26 @@
             return path;
         };
 
-        this.drawNote = function (paper, porteLiHe, lThickness, left, top, color, lColor) {
+        this.drawNote = function (paper, porteLiHe, lThickness, left, top, color, lColor, acci) {
 
             let portePos = notePositions[this.getNote()];
             let noteBodyTop = top + porteLiHe * portePos;
             left = Math.round(left * 100) / 100;
             noteBodyTop = Math.round(noteBodyTop * 100) / 100;
+            let accSymbol = null;
+            let stepLines = [];
+
+            if (acci) {
+                let accPath = symbols[acci];
+                accSymbol = paper.path(accPath);
+                let scaleFactor = parseFloat((porteLiHe / 3.25).toFixed(2));
+                accSymbol.transform('t ' + left + ' ' + noteBodyTop + ' ' + 's' + scaleFactor + ' 0 0');
+                accSymbol.attr({
+                    fill: color
+                });
+
+                left += accSymbol.getBBox().width + (porteLiHe / 2);
+            }
 
             if (portePos <= -1) {
                 // higher than A5
@@ -348,6 +362,7 @@
                         stroke: lColor,
                         strokeWidth: lThickness
                     });
+                    stepLines.push(stepLine);
                 }
             }
             if (portePos >= 5) {
@@ -360,6 +375,7 @@
                         stroke: lColor,
                         strokeWidth: lThickness
                     });
+                    stepLines.push(stepLine);
                 }
             }
 
@@ -374,6 +390,15 @@
                 fill: color
             });
             let noteG = paper.g();
+
+            for (let sl of stepLines) {
+                noteG.add(sl);
+            }
+
+            if (accSymbol) {
+                noteG.add(accSymbol);
+            }
+
             noteG.add(noteBody);
 
             if (this.isDotted) {
@@ -468,24 +493,6 @@
             return noteAcc;
         };
 
-        this.drawAcci = function (acci, note, paper, porteLiHe, left, top, color) {
-            let notePos = notePositions[note.getNote()];
-
-            let accPath = symbols[acci];
-            let accSymbol = paper.path(accPath);
-            let scaleFactor = parseFloat((porteLiHe / 3.25).toFixed(2));
-
-            top = top + (notePos * porteLiHe);
-
-            let translateStr = 't ' + left + ' ' + top;
-            let scaleStr = 's' + scaleFactor + ' 0 0';
-            accSymbol.transform(translateStr + ' ' + scaleStr);
-            accSymbol.attr({
-                fill: color
-            });
-            return accSymbol;
-        };
-
         this.drawMeasure = function (sParams) {
             this.startPos = sParams.startLeft;
             let paper = sParams.paper;
@@ -499,11 +506,7 @@
 
             for (let note of this.notes) {
                 let acci = this.getReqAccidental(sParams.accidentals, note);
-                if (acci) {
-                    acci = this.drawAcci(acci, note, paper, porteLiHe, left, top, color);
-                    left += acci.getBBox().width;
-                }
-                let noteG = note.drawNote(paper, porteLiHe, lThickness, left, top, color, lColor);
+                let noteG = note.drawNote(paper, porteLiHe, lThickness, left, top, color, lColor, acci);
                 left += noteG.getBBox().width + porteLiHe * 1.5 + rw;
             }
 
@@ -514,6 +517,7 @@
             if (sParams.endPos - left <= 1) {
                 left = sParams.endPos;
             }
+
             this.endPos = left;
             let x1 = left;
             let y1 = top;
