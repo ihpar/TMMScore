@@ -550,7 +550,7 @@
                 let name = noteNameDict[note.noteRoot];
                 acci[name] = note.noteComma;
             }
-            let sParams = {
+            return {
                 startLeft: 0,
                 startTop: 0,
                 cfg: this.configs,
@@ -558,8 +558,6 @@
                 paper: this.paper,
                 accidentals: acci
             };
-
-            return sParams;
         };
 
         this.acceptsMeasure = function (measure) {
