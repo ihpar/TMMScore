@@ -503,6 +503,15 @@
         this.endPos = 0;
         this.paperNotes = [];
         this.globalAccidentals = null;
+        this.guideGroup = null;
+        this.notesGroup = null;
+        this.box = {
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0
+        };
+        this.ghostColor = null;
 
         this.addNote = function (pitch, dur) {
             let note = new Note(pitch, dur);
@@ -572,7 +581,6 @@
                 lColor = 'transparent';
             }
 
-            //this.globalAccidentals = JSON.parse(JSON.stringify(sParams.accidentals));
             let accidentals = JSON.parse(JSON.stringify(sParams.accidentals));
 
             for (let note of this.notes) {
@@ -586,7 +594,7 @@
                 left += porteLiHe * 1.5 * 9;
             }
 
-            if (sParams.endPos - left <= 1) {
+            if (Math.abs(sParams.endPos - left) <= 1 || (left > sParams.endPos)) {
                 left = sParams.endPos;
             }
 
@@ -595,18 +603,61 @@
             let y1 = top;
             let y2 = top + porteLiHe * 4;
             if (!forReqWidth) {
+                this.ghostColor = sParams.cfg.ghostColor;
+                let eps = porteLiHe / 5;
+
+                this.box.top = top - porteLiHe * 5;
+                this.box.right = this.endPos - eps;
+                this.box.bottom = top + porteLiHe * 9;
+                this.box.left = this.startPos + eps;
+
                 let mLine = paper.line(x1, y1, x1, y2);
                 mLine.attr({
                     stroke: sParams.cfg.porteLineColor,
                     strokeWidth: sParams.cfg.lineThickness
                 });
+
+                // draw upper lower lines
+                let y;
+                this.guideGroup = paper.g();
+                for (let i = 1; i <= 5; i++) {
+                    y = top - i * porteLiHe;
+                    let upperLine = paper.line(this.box.left, y, this.box.right, y);
+                    this.guideGroup.add(upperLine);
+
+                    y = top + (i + 4) * porteLiHe;
+                    let lowerLine = paper.line(this.box.left, y, this.box.right, y);
+                    this.guideGroup.add(lowerLine);
+                }
+                this.guideGroup.attr({
+                    stroke: 'transparent',
+                    strokeWidth: sParams.cfg.lineThickness
+                });
+
+                this.notesGroup = paper.g();
+                for (let paperNote of this.paperNotes) {
+                    this.notesGroup.add(paperNote);
+                }
+
             } else {
                 for (let i = 0; i < this.paperNotes.length; i++) {
                     this.paperNotes[i].remove();
                 }
+                this.paperNotes = [];
+                this.notesGroup = null;
             }
 
             return left;
+        };
+
+        this.mouseOver = function (x, y) {
+            let color = 'transparent'
+            if ((x >= this.box.left) && (x <= this.box.right) && (y >= this.box.top) && (y <= this.box.bottom)) {
+                color = this.ghostColor;
+            }
+            this.guideGroup.attr({
+                stroke: color
+            });
         };
     }
 
@@ -820,8 +871,8 @@
         };
 
         this.handleMouse = function (x, y) {
-            if ((x <= this.box.right) && (x >= this.box.left) && (y >= this.box.top) && (y <= this.box.bottom)) {
-                // console.log(x, y);
+            for (let measure of this.measures) {
+                measure.mouseOver(x, y);
             }
         };
 
@@ -851,6 +902,7 @@
             mainColor: "#3b4552",
             porteLineColor: "#4e5872",
             paperBgColor: "#f6f7f6",
+            ghostColor: "#847476",
             defMeasureCount: 4
         };
 
@@ -968,14 +1020,12 @@
 
     let measure = new Measure();
     measure.addNote('Do5#4', '1/16');
-    measure.addNote('La4b5', '1/4');
     measure.addNote('Rest', '1/32');
     measure.addNote('Rest', '1/16');
     measure.addNote('Rest', '1/8');
     measure.addNote('Rest', '1/4');
     measure.addNote('Rest', '1/2');
     measure.addNote('Rest', '1/1');
-    measure.addNote('La4', '1/4');
     measure.addNote('Do6#4', '1/16');
     measure.addNote('La4', '1/4');
 
