@@ -245,6 +245,12 @@
         r32: "M 8.2992383,0.78942671 C 8.3654371,0.66936937 8.2607415,0.52620333 8.0892915,0.72137323 7.8135162,1.0353014 7.5300152,1.2443566 7.3616873,1.3386567 6.8867602,1.6047006 6.2849125,1.885614 5.8597271,1.8648124 5.8912125,1.744091 5.9080929,1.619885 5.9080929,1.4951313 5.9080929,0.66948315 5.2387765,2.0108712e-4 4.4131442,0 h -1.588e-4 c -0.8258439,-5.820455e-5 -1.495425,0.66928206 -1.4955573,1.4951313 0,0.8261112 0.6696604,1.4848258 1.4957161,1.4957161 C 5.3537908,3.0029388 6.3094129,2.6195258 6.9122131,2.1124175 6.8052421,2.8271126 6.1324596,4.8667908 5.7232285,6.1153622 5.2994983,6.3336355 4.8230367,6.5254637 4.4690506,6.5081467 4.500536,6.387428 4.51739,6.263222 4.51739,6.1384683 4.51739,5.3127619 3.8479677,4.6434719 3.022256,4.643329 l 1.059e-4,-5.82e-5 C 2.196465,4.6431279 1.5268046,5.3125026 1.5266458,6.1384101 1.5265135,6.9645186 2.1963063,7.6232359 3.0223619,7.6341261 3.963035,7.6462176 4.9185777,7.2628046 5.5213779,6.7556936 5.4071044,7.5190244 4.6552379,9.5904659 4.2085948,10.934433 3.7809487,11.156135 3.3009152,11.354329 2.9425106,11.336782 2.9739696,11.216034 2.99085,11.091886 2.99085,10.967104 2.99085,10.141368 2.3213748,9.4721098 1.4956896,9.4719061 0.66976625,9.4717923 1.3231987e-4,10.141138 2.8213606e-8,10.967104 -1.587218e-4,11.79327 0.66963396,12.451958 1.4956896,12.462849 2.4046392,12.47494 3.3628542,12.115583 3.9705227,11.633973 3.3175046,13.534028 2.0317883,17.335434 1.7548754,17.979628 1.6366067,18.254676 2.720684,18.293464 2.7722777,18.04606 3.0844331,16.548335 8.1755985,1.0135791 8.2992383,0.78942671 Z"
     };
 
+    let gGhostNote = {
+        symbol: null,
+        symbolR: null,
+        isRest: false
+    };
+
     function Note(pitch, duration) {
         this.noteRoot = '';
         this.noteOctave = 0;
@@ -512,6 +518,9 @@
             left: 0
         };
         this.ghostColor = null;
+        this.ghostsVisible = false;
+        this.porteLiHe = 10;
+        this.allYPos = [];
 
         this.addNote = function (pitch, dur) {
             let note = new Note(pitch, dur);
@@ -566,12 +575,12 @@
             this.startPos = sParams.startLeft;
             let paper = sParams.paper;
             let top = sParams.startTop;
-            let porteLiHe = sParams.cfg.porteLineHeight;
+            this.porteLiHe = sParams.cfg.porteLineHeight;
             let rw = this.widthDiff / (this.notes.length + 1);
             if (forReqWidth) {
                 rw = 0;
             }
-            let left = sParams.startLeft + porteLiHe * 1.5 + rw;
+            let left = sParams.startLeft + this.porteLiHe * 1.5 + rw;
             let color = sParams.cfg.noteColor;
             let lThickness = sParams.cfg.lineThickness;
             let lColor = sParams.cfg.porteLineColor;
@@ -585,13 +594,13 @@
 
             for (let note of this.notes) {
                 let acci = this.getReqAccidental(note, accidentals);
-                let noteG = note.drawNote(paper, porteLiHe, lThickness, left, top, color, lColor, acci);
-                left += noteG.getBBox().width + porteLiHe * 1.5 + rw;
+                let noteG = note.drawNote(paper, this.porteLiHe, lThickness, left, top, color, lColor, acci);
+                left += noteG.getBBox().width + this.porteLiHe * 1.5 + rw;
                 this.paperNotes.push(noteG);
             }
 
             if (this.notes.length === 0) {
-                left += porteLiHe * 1.5 * 9;
+                left += this.porteLiHe * 1.5 * 9;
             }
 
             if (Math.abs(sParams.endPos - left) <= 1 || (left > sParams.endPos)) {
@@ -601,14 +610,14 @@
             this.endPos = left;
             let x1 = left;
             let y1 = top;
-            let y2 = top + porteLiHe * 4;
+            let y2 = top + this.porteLiHe * 4;
             if (!forReqWidth) {
                 this.ghostColor = sParams.cfg.ghostColor;
-                let eps = porteLiHe / 5;
+                let eps = this.porteLiHe / 5;
 
-                this.box.top = top - porteLiHe * 5;
+                this.box.top = top - this.porteLiHe * 5;
                 this.box.right = this.endPos - eps;
-                this.box.bottom = top + porteLiHe * 9;
+                this.box.bottom = top + this.porteLiHe * 9;
                 this.box.left = this.startPos + eps;
 
                 let mLine = paper.line(x1, y1, x1, y2);
@@ -621,11 +630,11 @@
                 let y;
                 this.guideGroup = paper.g();
                 for (let i = 1; i <= 5; i++) {
-                    y = top - i * porteLiHe;
+                    y = top - i * this.porteLiHe;
                     let upperLine = paper.line(this.box.left, y, this.box.right, y);
                     this.guideGroup.add(upperLine);
 
-                    y = top + (i + 4) * porteLiHe;
+                    y = top + (i + 4) * this.porteLiHe;
                     let lowerLine = paper.line(this.box.left, y, this.box.right, y);
                     this.guideGroup.add(lowerLine);
                 }
@@ -639,6 +648,10 @@
                     this.notesGroup.add(paperNote);
                 }
 
+                // set y coords
+                for (let i = -10; i <= 18; i++) {
+                    this.allYPos.push(top + (this.porteLiHe / 2) * i);
+                }
             } else {
                 for (let i = 0; i < this.paperNotes.length; i++) {
                     this.paperNotes[i].remove();
@@ -651,13 +664,57 @@
         };
 
         this.mouseOver = function (x, y) {
-            let color = 'transparent'
             if ((x >= this.box.left) && (x <= this.box.right) && (y >= this.box.top) && (y <= this.box.bottom)) {
-                color = this.ghostColor;
+                if (!this.ghostsVisible) {
+                    this.guideGroup.attr({
+                        stroke: this.ghostColor
+                    });
+                }
+                if (y >= (this.allYPos[14] + this.porteLiHe / 4)) {
+                    gGhostNote.symbol.attr({
+                        fill: this.ghostColor
+                    });
+                    gGhostNote.symbolR.attr({
+                        fill: 'transparent'
+                    });
+                } else {
+                    gGhostNote.symbol.attr({
+                        fill: 'transparent'
+                    });
+                    gGhostNote.symbolR.attr({
+                        fill: this.ghostColor
+                    });
+                }
+                let snapPos = this.allYPos[0];
+                let min = this.porteLiHe * 100;
+                for (let yPos of this.allYPos) {
+                    let diff = Math.abs(y - yPos);
+                    if (diff < min) {
+                        snapPos = yPos;
+                        min = diff;
+                    }
+                }
+
+                this.ghostsVisible = true;
+                let scaleFactor = this.porteLiHe / 5;
+                let translateStr = 't ' + (x - this.porteLiHe / 2) + ' ' + snapPos;
+                let scaleStr = 's' + scaleFactor + ' 0 0';
+                gGhostNote.symbol.transform(translateStr + ' ' + scaleStr);
+                gGhostNote.symbolR.transform(translateStr + ' ' + scaleStr);
+            } else {
+                if (this.ghostsVisible) {
+                    this.guideGroup.attr({
+                        stroke: 'transparent'
+                    });
+                    gGhostNote.symbol.attr({
+                        fill: 'transparent'
+                    });
+                    gGhostNote.symbolR.attr({
+                        fill: 'transparent'
+                    });
+                }
+                this.ghostsVisible = false;
             }
-            this.guideGroup.attr({
-                stroke: color
-            });
         };
     }
 
@@ -989,6 +1046,14 @@
 
             svgElem.style.height = (configs.padding.top + configs.padding.bottom) + (numOfReqLines * 17 * configs.porteLineHeight) + 'px';
             // eof satir objects
+            gGhostNote.symbol = paper.path(symbols.n4);
+            gGhostNote.symbolR = paper.path(symbols.n4r);
+            gGhostNote.symbol.attr({
+                fill: 'transparent'
+            });
+            gGhostNote.symbolR.attr({
+                fill: 'transparent'
+            });
         };
 
         this.drawScore = function () {
