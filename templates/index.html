@@ -9,7 +9,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-    <script type="text/javascript" src="{{ url_for('static', filename='js/vexflow-debug.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/snap.svg.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/site.css') }}">
 </head>
@@ -25,49 +24,6 @@
 </div>
 <script type="text/javascript">
     "use strict";
-
-    function vexTest() {
-        let VF = Vex.Flow;
-
-        let div = document.getElementById("dv-score-wrapper");
-        let width = div.offsetWidth * 2;
-
-        let renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG);
-
-        // Size our SVG:
-        renderer.resize(width, width / 2);
-
-        // And get a drawing context:
-        let context = renderer.getContext();
-
-        // Create a stave at position 10, 40 of width 400 on the canvas.
-        let off_left = 10;
-        let off_top = 10;
-        let s_width = width - (off_left * 2);
-        let stave = new VF.Stave(off_left, off_top, s_width);
-
-        // Add a clef and time signature.
-        stave.addClef("treble").addTimeSignature("012345/6789");
-
-        // Connect it to the rendering context and draw!
-        stave.setContext(context).draw();
-
-        let notes = [
-            new VF.StaveNote({clef: "treble", keys: ["a/4"], duration: "32"}).addAccidental(0, new VF.Accidental("bss")),
-            new VF.StaveNote({clef: "treble", keys: ["a/4"], duration: "16"}).addAccidental(0, new VF.Accidental("b")),
-            new VF.StaveNote({clef: "treble", keys: ["a/4"], duration: "8"}).addAccidental(0, new VF.Accidental("bs")),
-            new VF.StaveNote({clef: "treble", keys: ["a/4"], duration: "4"}).addAccidental(0, new VF.Accidental("d")),
-            new VF.StaveNote({clef: "treble", keys: ["a/4"], duration: "2"}).addAccidental(0, new VF.Accidental("+")),
-            new VF.StaveNote({clef: "treble", keys: ["a/4"], duration: "1"}).addAccidental(0, new VF.Accidental("#")),
-            new VF.StaveNote({clef: "treble", keys: ["a/4"], duration: "8d"}).addAccidental(0, new VF.Accidental("+-")).addDot(0),
-            new VF.StaveNote({clef: "treble", keys: ["a/4"], duration: "4"}).addAccidental(0, new VF.Accidental("++-")).addDot(0),
-            new VF.StaveNote({clef: "treble", keys: ["a/4"], duration: "1"}).addAccidental(0, new VF.Accidental("n"))
-        ];
-
-        VF.Formatter.FormatAndDraw(context, stave, notes);
-    }
-
-    // vexTest();
 
     function createTMMMenu(containerSelector) {
         let scoreMenu = document.createElement('div');
