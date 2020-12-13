@@ -462,7 +462,7 @@
                 let scaleFactor = porteLiHe / 5;
                 let scaleStr = 's' + scaleFactor + ' 0 0';
                 let height = (restBody.getBBox().height) * scaleFactor;
-                let tTop = top;
+                let tTop;
                 switch (this.durStr) {
                     case "1/32":
                         tTop = top + porteLiHe * 4 - height;
