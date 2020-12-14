@@ -78,10 +78,6 @@
             height: 2em;
         }
 
-        .btn-group .tmm-menu-btn:not(:last-child) {
-            /*border-right: none;*/
-        }
-
     </style>
 </head>
 <body>
@@ -171,15 +167,15 @@
 
         let btn1 = document.createElement('div');
         btn1.className = 'tmm-menu-btn';
-        btn1.innerHTML = '<img alt="b8" src="static/img/nd1.svg">';
+        btn1.innerHTML = '<img alt="b1" src="static/img/nd1.svg">';
 
         let btn2 = document.createElement('div');
         btn2.className = 'tmm-menu-btn';
-        btn2.innerHTML = '<img alt="b8" src="static/img/nd2.svg">';
+        btn2.innerHTML = '<img alt="b2" src="static/img/nd2.svg">';
 
         let btn4 = document.createElement('div');
         btn4.className = 'tmm-menu-btn';
-        btn4.innerHTML = '<img alt="b8" src="static/img/nd4.svg">';
+        btn4.innerHTML = '<img alt="b4" src="static/img/nd4.svg">';
 
         let btn8 = document.createElement('div');
         btn8.className = 'tmm-menu-btn';
@@ -187,11 +183,15 @@
 
         let btn16 = document.createElement('div');
         btn16.className = 'tmm-menu-btn';
-        btn16.innerHTML = '<img alt="b8" src="static/img/nd16.svg">';
+        btn16.innerHTML = '<img alt="b16" src="static/img/nd16.svg">';
 
         let btn32 = document.createElement('div');
         btn32.className = 'tmm-menu-btn';
-        btn32.innerHTML = '<img alt="b8" src="static/img/nd32.svg">';
+        btn32.innerHTML = '<img alt="b32" src="static/img/nd32.svg">';
+
+        let btnDot = document.createElement('div');
+        btnDot.className = 'tmm-menu-btn';
+        btnDot.innerHTML = '<img alt="bd" src="static/img/dot.svg">';
 
         dvGroupNums.appendChild(btn1);
         dvGroupNums.appendChild(btn2);
@@ -199,6 +199,7 @@
         dvGroupNums.appendChild(btn8);
         dvGroupNums.appendChild(btn16);
         dvGroupNums.appendChild(btn32);
+        dvGroupNums.appendChild(btnDot);
 
         scoreMenu.appendChild(dvGroupGlobals);
         scoreMenu.appendChild(dvGroupAcc);
