@@ -212,12 +212,22 @@
         btnRRight.className = 'tmm-menu-btn';
         btnRRight.innerHTML = '<img alt="brr" src="static/img/repRight.svg">';
 
+        let btnVolta1 = document.createElement('div');
+        btnVolta1.className = 'tmm-menu-btn';
+        btnVolta1.innerHTML = '<img alt="bv1" src="static/img/volta1.svg">';
+
+        let btnVolta2 = document.createElement('div');
+        btnVolta2.className = 'tmm-menu-btn';
+        btnVolta2.innerHTML = '<img alt="bv1" src="static/img/volta2.svg">';
+
         let btnSegno = document.createElement('div');
         btnSegno.className = 'tmm-menu-btn';
         btnSegno.innerHTML = '<img alt="bseg" src="static/img/segno.svg">';
 
         dvGroupLocs.appendChild(btnRLeft);
         dvGroupLocs.appendChild(btnRRight);
+        dvGroupLocs.appendChild(btnVolta1);
+        dvGroupLocs.appendChild(btnVolta2);
         dvGroupLocs.appendChild(btnSegno);
 
         scoreMenu.appendChild(dvGroupGlobals);
