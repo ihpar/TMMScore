@@ -48,9 +48,10 @@
 
         .btn-group {
             display: table-cell;
+            height: 100%;
         }
 
-        .btn-group button {
+        .btn-group .tmm-menu-btn {
             position: relative;
             border: 1px solid #eeeeee;
             padding: 6px 10px;
@@ -60,10 +61,12 @@
             margin-right: 4px;
             top: -2px;
             box-shadow: 0 5px 5px -4px #999;
+            display: inline-block;
+            height: 100%;
             transition: all 100ms;
         }
 
-        .btn-group button:focus {
+        .btn-group .tmm-menu-btn:focus {
             top: 0;
             outline: none;
             z-index: 2;
@@ -71,37 +74,14 @@
             background-color: #ebebeb;
         }
 
-        .btn-group button img {
-            height: 1.5em;
+        .btn-group .tmm-menu-btn img {
+            height: 2em;
         }
 
-        .btn-group button:not(:last-child) {
+        .btn-group .tmm-menu-btn:not(:last-child) {
             /*border-right: none;*/
         }
 
-        .tmmTextInput {
-            position: relative;
-            display: inline-block;
-            font: inherit;
-            color: inherit;
-            border: 1px solid #eeeeee;
-            padding: 6px 10px;
-            cursor: pointer;
-            background-color: #f6f7f6;
-            z-index: 1;
-            margin-right: 4px;
-            top: -2px;
-            box-shadow: 0 5px 5px -4px #999;
-            transition: all 100ms;
-        }
-
-        .tmmTextInput:focus {
-            top: 0;
-            outline: none;
-            z-index: 2;
-            box-shadow: none;
-            background-color: #ebebeb;
-        }
     </style>
 </head>
 <body>
@@ -126,13 +106,11 @@
         dvGroupGlobals.className = 'btn-group';
 
         let makamInput = document.createElement('div');
-        makamInput.setAttribute('contentEditable', 'true');
-        makamInput.className = 'tmmTextInput';
+        makamInput.className = 'tmm-menu-btn';
         makamInput.innerHTML = 'Hicaz';
 
         let meterInput = document.createElement('div');
-        meterInput.setAttribute('contentEditable', 'true');
-        meterInput.className = 'tmmTextInput';
+        meterInput.className = 'tmm-menu-btn';
         meterInput.innerHTML = '9/8';
 
         dvGroupGlobals.appendChild(makamInput);
@@ -142,31 +120,40 @@
         let dvGroupAcc = document.createElement('div');
         dvGroupAcc.className = 'btn-group';
 
-        let btnB8 = document.createElement('button');
+        let btnB8 = document.createElement('div');
+        btnB8.className = 'tmm-menu-btn';
         btnB8.innerHTML = '<img alt="b8" src="static/img/b8.svg">';
 
-        let btnB5 = document.createElement('button');
+        let btnB5 = document.createElement('div');
+        btnB5.className = 'tmm-menu-btn';
         btnB5.innerHTML = '<img alt="b8" src="static/img/b5.svg">';
 
-        let btnB4 = document.createElement('button');
+        let btnB4 = document.createElement('div');
+        btnB4.className = 'tmm-menu-btn';
         btnB4.innerHTML = '<img alt="b8" src="static/img/b4.svg">';
 
-        let btnB1 = document.createElement('button');
+        let btnB1 = document.createElement('div');
+        btnB1.className = 'tmm-menu-btn';
         btnB1.innerHTML = '<img alt="b8" src="static/img/b1.svg">';
 
-        let btnNatural = document.createElement('button');
+        let btnNatural = document.createElement('div');
+        btnNatural.className = 'tmm-menu-btn';
         btnNatural.innerHTML = '<img alt="b8" src="static/img/nat.svg">';
 
-        let btnD1 = document.createElement('button');
+        let btnD1 = document.createElement('div');
+        btnD1.className = 'tmm-menu-btn';
         btnD1.innerHTML = '<img alt="b8" src="static/img/d1.svg">';
 
-        let btnD4 = document.createElement('button');
+        let btnD4 = document.createElement('div');
+        btnD4.className = 'tmm-menu-btn';
         btnD4.innerHTML = '<img alt="b8" src="static/img/d4.svg">';
 
-        let btnD5 = document.createElement('button');
+        let btnD5 = document.createElement('div');
+        btnD5.className = 'tmm-menu-btn';
         btnD5.innerHTML = '<img alt="b8" src="static/img/d5.svg">';
 
-        let btnD8 = document.createElement('button');
+        let btnD8 = document.createElement('div');
+        btnD8.className = 'tmm-menu-btn';
         btnD8.innerHTML = '<img alt="b8" src="static/img/d8.svg">';
 
         dvGroupAcc.appendChild(btnB8);
@@ -182,14 +169,36 @@
         let dvGroupNums = document.createElement('div');
         dvGroupNums.className = 'btn-group';
 
-        let btn0 = document.createElement('button');
-        btn0.innerHTML = '<img alt="b8" src="static/img/0.svg">';
+        let btn1 = document.createElement('div');
+        btn1.className = 'tmm-menu-btn';
+        btn1.innerHTML = '<img alt="b8" src="static/img/nd1.svg">';
 
-        let btn1 = document.createElement('button');
-        btn1.innerHTML = '<img alt="b8" src="static/img/1.svg">';
+        let btn2 = document.createElement('div');
+        btn2.className = 'tmm-menu-btn';
+        btn2.innerHTML = '<img alt="b8" src="static/img/nd2.svg">';
 
-        dvGroupNums.appendChild(btn0);
+        let btn4 = document.createElement('div');
+        btn4.className = 'tmm-menu-btn';
+        btn4.innerHTML = '<img alt="b8" src="static/img/nd4.svg">';
+
+        let btn8 = document.createElement('div');
+        btn8.className = 'tmm-menu-btn';
+        btn8.innerHTML = '<img alt="b8" src="static/img/nd8.svg">';
+
+        let btn16 = document.createElement('div');
+        btn16.className = 'tmm-menu-btn';
+        btn16.innerHTML = '<img alt="b8" src="static/img/nd16.svg">';
+
+        let btn32 = document.createElement('div');
+        btn32.className = 'tmm-menu-btn';
+        btn32.innerHTML = '<img alt="b8" src="static/img/nd32.svg">';
+
         dvGroupNums.appendChild(btn1);
+        dvGroupNums.appendChild(btn2);
+        dvGroupNums.appendChild(btn4);
+        dvGroupNums.appendChild(btn8);
+        dvGroupNums.appendChild(btn16);
+        dvGroupNums.appendChild(btn32);
 
         scoreMenu.appendChild(dvGroupGlobals);
         scoreMenu.appendChild(dvGroupAcc);
