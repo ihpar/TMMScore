@@ -11,6 +11,98 @@
 
     <script type="text/javascript" src="{{ url_for('static', filename='js/snap.svg.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/site.css') }}">
+    <style type="text/css">
+        .dv-main-wrapper {
+            display: flex;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .dv-center-content {
+            padding-top: 1rem;
+            width: auto;
+        }
+
+        #dv-top {
+            width: 100%;
+            padding: 0;
+            margin-bottom: 1.5em;;
+        }
+
+        #dv-score-wrapper {
+            width: 100%;
+        }
+
+        .shadowed {
+            position: relative;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 10px -8px #999;
+        }
+
+        /* top menu */
+        .dv-score-menu {
+            margin-bottom: 1.5em;
+            display: table;
+            width: 100%;
+        }
+
+        .btn-group {
+            display: table-cell;
+        }
+
+        .btn-group button {
+            position: relative;
+            border: 1px solid #eeeeee;
+            padding: 6px 10px;
+            cursor: pointer;
+            background-color: #f6f7f6;
+            z-index: 1;
+            margin-right: 4px;
+            top: -2px;
+            box-shadow: 0 5px 5px -4px #999;
+            transition: all 100ms;
+        }
+
+        .btn-group button:focus {
+            top: 0;
+            outline: none;
+            z-index: 2;
+            box-shadow: none;
+            background-color: #ebebeb;
+        }
+
+        .btn-group button img {
+            height: 1.5em;
+        }
+
+        .btn-group button:not(:last-child) {
+            /*border-right: none;*/
+        }
+
+        .tmmTextInput {
+            position: relative;
+            display: inline-block;
+            font: inherit;
+            color: inherit;
+            border: 1px solid #eeeeee;
+            padding: 6px 10px;
+            cursor: pointer;
+            background-color: #f6f7f6;
+            z-index: 1;
+            margin-right: 4px;
+            top: -2px;
+            box-shadow: 0 5px 5px -4px #999;
+            transition: all 100ms;
+        }
+
+        .tmmTextInput:focus {
+            top: 0;
+            outline: none;
+            z-index: 2;
+            box-shadow: none;
+            background-color: #ebebeb;
+        }
+    </style>
 </head>
 <body>
 <div class="dv-main-wrapper">
@@ -30,6 +122,23 @@
         scoreMenu.setAttribute('id', 'dv-score-menu');
         scoreMenu.className = 'dv-score-menu';
 
+        let dvGroupGlobals = document.createElement('div');
+        dvGroupGlobals.className = 'btn-group';
+
+        let makamInput = document.createElement('div');
+        makamInput.setAttribute('contentEditable', 'true');
+        makamInput.className = 'tmmTextInput';
+        makamInput.innerHTML = 'Hicaz';
+
+        let meterInput = document.createElement('div');
+        meterInput.setAttribute('contentEditable', 'true');
+        meterInput.className = 'tmmTextInput';
+        meterInput.innerHTML = '9/8';
+
+        dvGroupGlobals.appendChild(makamInput);
+        dvGroupGlobals.appendChild(meterInput);
+
+
         let dvGroupAcc = document.createElement('div');
         dvGroupAcc.className = 'btn-group';
 
@@ -44,6 +153,9 @@
 
         let btnB1 = document.createElement('button');
         btnB1.innerHTML = '<img alt="b8" src="static/img/b1.svg">';
+
+        let btnNatural = document.createElement('button');
+        btnNatural.innerHTML = '<img alt="b8" src="static/img/nat.svg">';
 
         let btnD1 = document.createElement('button');
         btnD1.innerHTML = '<img alt="b8" src="static/img/d1.svg">';
@@ -61,6 +173,7 @@
         dvGroupAcc.appendChild(btnB5);
         dvGroupAcc.appendChild(btnB4);
         dvGroupAcc.appendChild(btnB1);
+        dvGroupAcc.appendChild(btnNatural);
         dvGroupAcc.appendChild(btnD1);
         dvGroupAcc.appendChild(btnD4);
         dvGroupAcc.appendChild(btnD5);
@@ -78,6 +191,7 @@
         dvGroupNums.appendChild(btn0);
         dvGroupNums.appendChild(btn1);
 
+        scoreMenu.appendChild(dvGroupGlobals);
         scoreMenu.appendChild(dvGroupAcc);
         scoreMenu.appendChild(dvGroupNums);
 
@@ -1002,8 +1116,8 @@
 
             svgElem.style.height = (configs.padding.top + configs.padding.bottom) + (numOfReqLines * 17 * configs.porteLineHeight) + 'px';
             // eof satir objects
-            gGhostNote.symbol = paper.path(symbols.n4);
-            gGhostNote.symbolR = paper.path(symbols.n4r);
+            gGhostNote.symbol = paper.path(symbols.n16);
+            gGhostNote.symbolR = paper.path(symbols.n16r);
             gGhostNote.symbol.attr({
                 fill: 'transparent'
             });
