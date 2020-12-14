@@ -75,7 +75,7 @@
         }
 
         .btn-group .tmm-menu-btn img {
-            height: 2em;
+            height: 1.8em;
         }
 
     </style>
@@ -162,6 +162,16 @@
         dvGroupAcc.appendChild(btnD5);
         dvGroupAcc.appendChild(btnD8);
 
+        let dvGroupRests = document.createElement('div');
+        dvGroupRests.className = 'btn-group';
+
+        let btnRest4 = document.createElement('div');
+        btnRest4.className = 'tmm-menu-btn';
+        btnRest4.innerHTML = '<img alt="b8" src="static/img/rest4.svg">';
+
+        dvGroupRests.appendChild(btnRest4);
+
+
         let dvGroupDurs = document.createElement('div');
         dvGroupDurs.className = 'btn-group';
 
@@ -232,6 +242,7 @@
 
         scoreMenu.appendChild(dvGroupGlobals);
         scoreMenu.appendChild(dvGroupAcc);
+        scoreMenu.appendChild(dvGroupRests);
         scoreMenu.appendChild(dvGroupDurs);
         scoreMenu.appendChild(dvGroupLocs);
 
