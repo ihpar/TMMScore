@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="7.0883198mm"
+   height="2.3811707mm"
+   viewBox="0 0 7.0883198 2.3811707"
+   version="1.1"
+   id="svg8"
+   sodipodi:docname="r2.svg"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
+  <defs
+     id="defs2">
+    <symbol
+       id="ms_rest_1_2">
+      <title
+         id="title175">rest 1_2</title>
+      <path
+         sodipodi:nodetypes="cssssssscc"
+         inkscape:connector-curvature="0"
+         d="M 0.18245667,0 H 6.9058631 C 7.006934,0 7.0883198,0.03860271 7.0883198,0.08638646 V 2.2947577 c 0,0.047916 -0.081412,0.086413 -0.1824567,0.086413 H 0.18245667 C 0.08138583,2.3811706 0,2.3425679 0,2.2947577 V 0.08641292 C 0,0.03852333 0.08138583,2.6458333e-5 0.18245667,2.6458333e-5 Z"
+         id="path177"
+         style="stroke-width:0.264583" />
+    </symbol>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="15.839192"
+     inkscape:cx="18.017899"
+     inkscape:cy="7.3728517"
+     inkscape:document-units="mm"
+     inkscape:current-layer="use980"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="use980">
+      <title
+         id="title994">rest 1_2</title>
+      <path
+         d="M 0.18245667,0 H 6.9058631 C 7.006934,0 7.0883198,0.03860271 7.0883198,0.08638646 V 2.2947577 c 0,0.047916 -0.081412,0.086413 -0.1824567,0.086413 H 0.18245667 C 0.08138583,2.3811706 0,2.3425679 0,2.2947577 V 0.08641292 C 0,0.03852333 0.08138583,2.6458333e-5 0.18245667,2.6458333e-5 Z"
+         id="path996"
+         style="stroke-width:0.264583" />
+    </g>
+  </g>
+</svg>
