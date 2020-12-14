@@ -162,8 +162,8 @@
         dvGroupAcc.appendChild(btnD5);
         dvGroupAcc.appendChild(btnD8);
 
-        let dvGroupNums = document.createElement('div');
-        dvGroupNums.className = 'btn-group';
+        let dvGroupDurs = document.createElement('div');
+        dvGroupDurs.className = 'btn-group';
 
         let btn1 = document.createElement('div');
         btn1.className = 'tmm-menu-btn';
@@ -193,17 +193,37 @@
         btnDot.className = 'tmm-menu-btn';
         btnDot.innerHTML = '<img alt="bd" src="static/img/dot.svg">';
 
-        dvGroupNums.appendChild(btn1);
-        dvGroupNums.appendChild(btn2);
-        dvGroupNums.appendChild(btn4);
-        dvGroupNums.appendChild(btn8);
-        dvGroupNums.appendChild(btn16);
-        dvGroupNums.appendChild(btn32);
-        dvGroupNums.appendChild(btnDot);
+        dvGroupDurs.appendChild(btn1);
+        dvGroupDurs.appendChild(btn2);
+        dvGroupDurs.appendChild(btn4);
+        dvGroupDurs.appendChild(btn8);
+        dvGroupDurs.appendChild(btn16);
+        dvGroupDurs.appendChild(btn32);
+        dvGroupDurs.appendChild(btnDot);
+
+        let dvGroupLocs = document.createElement('div');
+        dvGroupLocs.className = 'btn-group';
+
+        let btnRLeft = document.createElement('div');
+        btnRLeft.className = 'tmm-menu-btn';
+        btnRLeft.innerHTML = '<img alt="brl" src="static/img/repLeft.svg">';
+
+        let btnRRight = document.createElement('div');
+        btnRRight.className = 'tmm-menu-btn';
+        btnRRight.innerHTML = '<img alt="brr" src="static/img/repRight.svg">';
+
+        let btnSegno = document.createElement('div');
+        btnSegno.className = 'tmm-menu-btn';
+        btnSegno.innerHTML = '<img alt="bseg" src="static/img/segno.svg">';
+
+        dvGroupLocs.appendChild(btnRLeft);
+        dvGroupLocs.appendChild(btnRRight);
+        dvGroupLocs.appendChild(btnSegno);
 
         scoreMenu.appendChild(dvGroupGlobals);
         scoreMenu.appendChild(dvGroupAcc);
-        scoreMenu.appendChild(dvGroupNums);
+        scoreMenu.appendChild(dvGroupDurs);
+        scoreMenu.appendChild(dvGroupLocs);
 
         document.querySelector(containerSelector).append(scoreMenu);
     }
