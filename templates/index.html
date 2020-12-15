@@ -42,40 +42,65 @@
         /* top menu */
         .dv-score-menu {
             margin-bottom: 1.5em;
-            display: table;
+            display: flex;
+            justify-content: space-between;
             width: 100%;
         }
 
         .btn-group {
-            display: table-cell;
             height: 100%;
+        }
+
+        .btn-group .tmm-menu-btn:not(:first-child) {
+            margin-left: 0.2em;
         }
 
         .btn-group .tmm-menu-btn {
             position: relative;
             border: 1px solid #eeeeee;
-            padding: 6px 10px;
+            padding: 0.2em 0.4em;
             cursor: pointer;
             background-color: #f6f7f6;
-            z-index: 1;
-            margin-right: 4px;
             top: -2px;
             box-shadow: 0 5px 5px -4px #999;
-            display: inline-block;
-            height: 100%;
+            height: 1.8em;
             transition: all 100ms;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .btn-group .tmm-menu-btn:focus {
+        .btn-group .tmm-menu-btn.clicked {
             top: 0;
-            outline: none;
-            z-index: 2;
             box-shadow: none;
             background-color: #ebebeb;
         }
 
         .btn-group .tmm-menu-btn img {
-            height: 1.8em;
+            height: 100%;
+        }
+
+        .ddTmmList {
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background-color: #ebebeb;
+            box-shadow: 0 5px 5px -4px #999;
+            z-index: 3;
+            margin-top: 3px;
+            max-height: 10em;
+            overflow-y: scroll;
+            display: none;
+            transition: all 100ms;
+            transition-delay: 1000ms;
+        }
+
+        .clicked .ddTmmList{
+            display: block;
+        }
+
+        .ddTmmItem {
+            padding: 0.2em 0.4em;
         }
 
     </style>
@@ -93,7 +118,34 @@
 <script type="text/javascript">
     "use strict";
 
+    function tmmMenuButtonClick(e) {
+        let sender = e.currentTarget;
+        if (sender.classList.contains("clicked")) {
+            sender.classList.remove("clicked");
+        } else {
+            sender.classList.add("clicked");
+        }
+    }
+
     function createTMMMenu(containerSelector) {
+        let tmmMakams = [
+            {name: "Do Majör", accidentals: []},
+            {name: "Acemaşîran", accidentals: ['B4b5']},
+            {name: "Acemkürdî", accidentals: ['B4b5']},
+            {name: "Bestenigâr", accidentals: ['B4b1', 'D5b4']},
+            {name: "Beyâtî", accidentals: ['B4b1']},
+            {name: "Bûselik", accidentals: []},
+            {name: "Ferahfeza", accidentals: ['B4b1', 'F5#4']},
+            {name: "Hicaz", accidentals: ['B4b4', 'F5#4', 'C5#4']},
+            {name: "Hüseynî", accidentals: ['B4b1', 'F5#4']},
+            {name: "Kürdî", accidentals: ['B4b5']},
+            {name: "Muhayyer", accidentals: ['B4b1', 'F5#4']},
+            {name: "Nihâvent", accidentals: ['B4b5', 'E5b5']},
+            {name: "Rast", accidentals: ['B4b1', 'F5#4']},
+            {name: "Segâh", accidentals: ['B4b1', 'E5b1', 'F5#4']},
+            {name: "Uşşak", accidentals: ['B4b1']}
+        ];
+
         let scoreMenu = document.createElement('div');
         scoreMenu.setAttribute('id', 'dv-score-menu');
         scoreMenu.className = 'dv-score-menu';
@@ -103,7 +155,18 @@
 
         let makamInput = document.createElement('div');
         makamInput.className = 'tmm-menu-btn';
-        makamInput.innerHTML = 'Hicaz';
+        makamInput.innerHTML = '<span id="selectedMakamName">Hicaz</span>';
+        makamInput.style.position = 'relative';
+
+        let ddMakam = document.createElement('div');
+        ddMakam.className = 'ddTmmList';
+        for (let m of tmmMakams) {
+            let ddItem = document.createElement('div');
+            ddItem.className = 'ddTmmItem';
+            ddItem.innerHTML = m.name;
+            ddMakam.appendChild(ddItem);
+        }
+        makamInput.appendChild(ddMakam);
 
         let meterInput = document.createElement('div');
         meterInput.className = 'tmm-menu-btn';
@@ -1081,17 +1144,23 @@
             porteLineColor: "#4e5872",
             paperBgColor: "#f6f7f6",
             ghostColor: "#847476",
-            defMeasureCount: 4
+            defMeasureCount: 4,
+            maxPaperWidth: 1100
         };
 
         // prep work
         let windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-        let scorePaperWidth = 1000;
-        if (windowWidth < 1100) {
-            scorePaperWidth = windowWidth - 100;
+        let scorePaperWidth = configs.maxPaperWidth;
+        if (windowWidth < configs.maxPaperWidth + 50) {
+            scorePaperWidth = windowWidth - 50;
         }
 
         createTMMMenu(containerSelector);
+
+        let tmmMenuButtons = document.querySelectorAll('.tmm-menu-btn');
+        for (let tmmMenuButton of tmmMenuButtons) {
+            tmmMenuButton.addEventListener('click', tmmMenuButtonClick);
+        }
 
         let svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         let svgID = 'svg-tmm-score';
