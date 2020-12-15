@@ -15,13 +15,34 @@
         html, body {
             font-family: 'JetBrains Mono', monospace;
             font-size: 12pt;
-            color: #333841;
+            color: #BC8D81;
             height: 100%;
             background-color: #232323;
         }
 
         body {
             overflow-y: scroll;
+        }
+
+        /* Works on Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #376D72 #87795D;
+        }
+
+        /* Works on Chrome, Edge, and Safari */
+        *::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        *::-webkit-scrollbar-track {
+            background: #87795D;
+        }
+
+        *::-webkit-scrollbar-thumb {
+            background-color: #376D72;
+            border: 3px solid #376D72;
+            border-radius: 6px;
         }
 
         .dv-main-wrapper {
@@ -44,7 +65,7 @@
         .shadowed {
             position: relative;
             margin-bottom: 2rem;
-            box-shadow: 0 10px 10px -8px #999;
+            box-shadow: 0 10px 10px -8px #141414;
         }
 
         .shadowed-porte {
@@ -59,7 +80,6 @@
             display: flex;
             justify-content: space-between;
             width: 100%;
-            visibility: hidden;
         }
 
         .btn-group {
@@ -72,12 +92,12 @@
 
         .btn-group .tmm-menu-btn {
             position: relative;
-            border: 1px solid #eeeeee;
+            border: 1px solid #232323;
             padding: 0.2em 0.4em;
             cursor: pointer;
-            background-color: #f6f7f6;
+            background-color: #2B2B2B;
             top: -2px;
-            box-shadow: 0 5px 5px -4px #999;
+            box-shadow: 0 0 5px -4px #141414;
             height: 1.8em;
             transition: all 100ms;
             display: inline-flex;
@@ -88,7 +108,7 @@
         .btn-group .tmm-menu-btn.clicked {
             top: 0;
             box-shadow: none;
-            background-color: #ebebeb;
+            background-color: #292929;
         }
 
         .btn-group .tmm-menu-btn img {
@@ -99,11 +119,11 @@
             position: absolute;
             left: 0;
             top: 100%;
-            background-color: #ebebeb;
-            box-shadow: 0 5px 5px -4px #999;
+            background-color: #2B2B2B;
+            box-shadow: 0 0 6px -2px #141414;
             z-index: 3;
             margin-top: 6px;
-            max-height: 9.4em;
+            max-height: 10em;
             overflow-y: scroll;
             height: 0;
             opacity: 0;
@@ -122,11 +142,11 @@
         }
 
         .ddTmmItem:hover {
-            background-color: #f6f7f6;
+            background-color: #2F2F2F;
         }
 
         .ddTmmItem:not(:last-child) {
-            border-bottom: 0.1em solid #f9f9f9;
+            border-bottom: 0.1em solid #232323;
         }
 
         #selectedMakamName {
@@ -1226,9 +1246,9 @@
             padding: {top: 20, right: 20, bottom: 20, left: 20},
             lineThickness: 1,
             porteLineHeight: 10,
-            noteColor: "#FEC05F",
-            mainColor: "#9876AA",
-            porteLineColor: "#668558",
+            noteColor: "#BC8D81",
+            mainColor: "#87795D",
+            porteLineColor: "#376D72",
             paperBgColor: "#2B2B2B",
             ghostColor: "#726756",
             defMeasureCount: 4,
