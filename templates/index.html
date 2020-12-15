@@ -12,6 +12,18 @@
     <script type="text/javascript" src="{{ url_for('static', filename='js/snap.svg.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/site.css') }}">
     <style type="text/css">
+        html, body {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12pt;
+            color: #333841;
+            height: 100%;
+            background-color: #232323;
+        }
+
+        body {
+            overflow-y: scroll;
+        }
+
         .dv-main-wrapper {
             display: flex;
             justify-content: center;
@@ -35,12 +47,19 @@
             box-shadow: 0 10px 10px -8px #999;
         }
 
+        .shadowed-porte {
+            position: relative;
+            margin-bottom: 2rem;
+            box-shadow: 0 0 15px -4px #141414;
+        }
+
         /* top menu */
         .dv-score-menu {
             margin-bottom: 1.5em;
             display: flex;
             justify-content: space-between;
             width: 100%;
+            visibility: hidden;
         }
 
         .btn-group {
@@ -136,7 +155,7 @@
             }
 
             @page {
-                size: A4; /* DIN A4 standard, Europe */
+                size: A4;
                 margin: 0;
             }
         }
@@ -147,7 +166,7 @@
 <div class="dv-main-wrapper">
     <div class="dv-center-content">
         <div id="dv-top">
-            Merhaba, aşağıdaki menüden notalarınızı yazıp paylaşabilirsiniz!
+            &nbsp;
         </div>
         <div id="dv-tmm-wrapper"></div>
     </div>
@@ -1189,6 +1208,7 @@
     }
 
     function TmmScore(containerSelector) {
+        /*
         let configs = {
             padding: {top: 20, right: 20, bottom: 20, left: 20},
             lineThickness: 0.5,
@@ -1201,7 +1221,19 @@
             defMeasureCount: 4,
             maxPaperWidth: 1100
         };
-
+        */
+        let configs = {
+            padding: {top: 20, right: 20, bottom: 20, left: 20},
+            lineThickness: 1,
+            porteLineHeight: 10,
+            noteColor: "#FEC05F",
+            mainColor: "#9876AA",
+            porteLineColor: "#668558",
+            paperBgColor: "#2B2B2B",
+            ghostColor: "#726756",
+            defMeasureCount: 4,
+            maxPaperWidth: 1100
+        };
         // prep work
         let windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
         let scorePaperWidth = configs.maxPaperWidth;
@@ -1214,7 +1246,7 @@
         let svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         let svgID = 'svg-tmm-score';
         svgElem.setAttribute('id', svgID);
-        svgElem.setAttribute('class', 'shadowed');
+        svgElem.setAttribute('class', 'shadowed-porte');
         svgElem.style.backgroundColor = configs.paperBgColor;
         svgElem.style.width = scorePaperWidth + 'px';
 
@@ -1293,6 +1325,8 @@
             gGhostNote.symbolR.attr({
                 fill: 'transparent'
             });
+            gGhostNote.symbol.addClass('no-print');
+            gGhostNote.symbolR.addClass('no-print');
         };
 
         this.drawScore = function () {
@@ -1341,6 +1375,58 @@
     measure.addNote('Re5', '1/8');
     measure.addNote('Do5#4', '1/16');
 
+    tmmScore.addMeasure(measure);
+
+    measure = new Measure();
+    measure.addNote('Do5#4', '1/16');
+    measure.addNote('Re5', '1/32');
+    measure.addNote('Mi5', '1/16');
+    measure.addNote('Re5', '1/8');
+    measure.addNote('Do5#4', '1/4');
+    measure.addNote('Rest', '1/4');
+    measure.addNote('Si4b4', '1/1');
+    measure.addNote('La4', '1/16');
+    measure.addNote('La4', '1/4');
+
+    tmmScore.addMeasure(measure);
+
+    measure = new Measure();
+    measure.addNote('Sol4', '1/2');
+    measure.addNote('La4', '1/4');
+    measure.addNote('Si4b4', '1/8');
+    measure.addNote('Do5#4', '1/16');
+    measure.addNote('Si4b4', '1/8');
+    measure.addNote('Do5#4', '1/16');
+    measure.addNote('Re5', '1/16');
+
+    tmmScore.addMeasure(measure);
+
+    measure = new Measure();
+    measure.addNote('Do5#4', '1/16');
+    measure.addNote('Si4b4', '1/8');
+    measure.addNote('La5', '1/8');
+    measure.addNote('Si5b4', '1/4');
+    measure.addNote('La5', '1/4');
+    measure.addNote('Sol5', '1/2');
+    measure.addNote('Fa5', '1/4');
+    measure.addNote('Mi5', '1/16');
+    measure.addNote('Re5', '1/16');
+    measure.addNote('Do5#4', '1/16');
+
+    tmmScore.addMeasure(measure);
+
+    measure = new Measure();
+    measure.addNote('Fa5', '1/2');
+    measure.addNote('Mi5', '1/4');
+    measure.addNote('Re5', '1/8');
+    measure.addNote('Do5#4', '1/16');
+
+    tmmScore.addMeasure(measure);
+
+    measure = new Measure();
+    tmmScore.addMeasure(measure);
+
+    measure = new Measure();
     tmmScore.addMeasure(measure);
 
     tmmScore.drawScore();

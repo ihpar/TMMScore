@@ -47,15 +47,3 @@ table {
     border-collapse: collapse;
     border-spacing: 0;
 }
-
-html, body {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12pt;
-    color: #333841;
-    height: 100%;
-}
-
-body {
-    overflow-y: scroll;
-    background-color: #fff;
-}
