@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>&#6158;&nbsp;TMM Katip</title>
+    <title>TMM Katip</title>
     <link rel="shortcut icon" href="../static/img/fav.png">
     <!-- font -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -27,10 +27,6 @@
             width: 100%;
             padding: 0;
             margin-bottom: 1.5em;;
-        }
-
-        #dv-score-wrapper {
-            width: 100%;
         }
 
         .shadowed {
@@ -87,20 +83,62 @@
             background-color: #ebebeb;
             box-shadow: 0 5px 5px -4px #999;
             z-index: 3;
-            margin-top: 3px;
-            max-height: 10em;
+            margin-top: 6px;
+            max-height: 9.4em;
             overflow-y: scroll;
-            display: none;
+            height: 0;
+            opacity: 0;
             transition: all 100ms;
-            transition-delay: 1000ms;
+            transition-delay: 100ms;
         }
 
-        .clicked .ddTmmList{
-            display: block;
+        .clicked .ddTmmList {
+            height: auto;
+            opacity: 1;
         }
 
         .ddTmmItem {
-            padding: 0.2em 0.4em;
+            padding: 0.4em;
+            transition: all 200ms;
+        }
+
+        .ddTmmItem:hover {
+            background-color: #f6f7f6;
+        }
+
+        .ddTmmItem:not(:last-child) {
+            border-bottom: 0.1em solid #f9f9f9;
+        }
+
+        #selectedMakamName {
+            width: 5em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @media print {
+            html {
+                zoom: 75%;
+            }
+
+            body {
+                margin: 0;
+                background-color: #fff;
+            }
+
+            #dv-top, #dv-score-menu, .no-print {
+                display: none;
+            }
+
+            .shadowed {
+                box-shadow: none;
+            }
+
+            @page {
+                size: A4; /* DIN A4 standard, Europe */
+                margin: 0;
+            }
         }
 
     </style>
@@ -111,7 +149,6 @@
         <div id="dv-top">
             Merhaba, aşağıdaki menüden notalarınızı yazıp paylaşabilirsiniz!
         </div>
-        <div id="dv-score-wrapper"></div>
         <div id="dv-tmm-wrapper"></div>
     </div>
 </div>
@@ -125,6 +162,14 @@
         } else {
             sender.classList.add("clicked");
         }
+    }
+
+    function makamMenuItemClick(e) {
+        let sender = e.currentTarget;
+        let selectedMakam = sender.innerHTML;
+        let accidentals = JSON.parse(sender.getAttribute('data-accidentals'));
+        document.getElementById('selectedMakamName').innerHTML = selectedMakam;
+        console.log(accidentals);
     }
 
     function createTMMMenu(containerSelector) {
@@ -164,6 +209,8 @@
             let ddItem = document.createElement('div');
             ddItem.className = 'ddTmmItem';
             ddItem.innerHTML = m.name;
+            ddItem.setAttribute('data-accidentals', JSON.stringify(m.accidentals));
+            ddItem.addEventListener('click', makamMenuItemClick);
             ddMakam.appendChild(ddItem);
         }
         makamInput.appendChild(ddMakam);
@@ -310,6 +357,11 @@
         scoreMenu.appendChild(dvGroupLocs);
 
         document.querySelector(containerSelector).append(scoreMenu);
+
+        let tmmMenuButtons = document.querySelectorAll('.tmm-menu-btn');
+        for (let tmmMenuButton of tmmMenuButtons) {
+            tmmMenuButton.addEventListener('click', tmmMenuButtonClick);
+        }
     }
 
     const notePositions = {
@@ -827,6 +879,8 @@
                     strokeWidth: sParams.cfg.lineThickness
                 });
 
+                this.guideGroup.addClass('no-print');
+
                 this.notesGroup = paper.g();
                 for (let paperNote of this.paperNotes) {
                     this.notesGroup.add(paperNote);
@@ -1156,11 +1210,6 @@
         }
 
         createTMMMenu(containerSelector);
-
-        let tmmMenuButtons = document.querySelectorAll('.tmm-menu-btn');
-        for (let tmmMenuButton of tmmMenuButtons) {
-            tmmMenuButton.addEventListener('click', tmmMenuButtonClick);
-        }
 
         let svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         let svgID = 'svg-tmm-score';
