@@ -15,34 +15,40 @@
         html, body {
             font-family: 'JetBrains Mono', monospace;
             font-size: 12pt;
-            color: #5C866E;
+            color: #635C57;
             height: 100%;
-            background-color: #232323;
+            background-color: #F2EDE6;
         }
 
         body {
             overflow-y: scroll;
         }
 
-        /* Works on Firefox */
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: #376D72 #87795D;
+        body ::-webkit-scrollbar {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
         }
 
-        /* Works on Chrome, Edge, and Safari */
-        *::-webkit-scrollbar {
-            width: 12px;
+        body ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 0px;
         }
 
-        *::-webkit-scrollbar-track {
-            background: #383129;
+        body ::-webkit-scrollbar-thumb {
+            cursor: pointer;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.25);
+            -webkit-transition: color 0.2s ease;
+            transition: color 0.2s ease;
         }
 
-        *::-webkit-scrollbar-thumb {
-            background-color: #867867;
-            border: 3px solid #867867;
-            border-radius: 6px;
+        body ::-webkit-scrollbar-thumb:window-inactive {
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        body ::-webkit-scrollbar-thumb:hover {
+            background: rgba(128, 135, 139, 0.8);
         }
 
         .dv-main-wrapper {
@@ -62,19 +68,12 @@
             margin-bottom: 1.5em;;
         }
 
-        .shadowed {
-            position: relative;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 10px -8px #141414;
-        }
-
         .shadowed-porte {
             position: relative;
             margin-bottom: 2rem;
-            box-shadow: 0 0 15px -4px #141414;
+            box-shadow: 0 0 30px -20px #141414;
         }
 
-        /* top menu */
         .dv-score-menu {
             margin-bottom: 1.5em;
             display: flex;
@@ -92,61 +91,64 @@
 
         .btn-group .tmm-menu-btn {
             position: relative;
-            border: 1px solid #232323;
+            border: 1px solid #EFE3D5;
             padding: 0.2em 0.4em;
             cursor: pointer;
-            background-color: #2B2B2B;
-            top: -2px;
-            box-shadow: 0 0 5px -4px #141414;
+            top: 0;
+            box-shadow: none;
+            background-color: #F9F3E8;
             height: 1.8em;
-            transition: all 100ms;
+            /*transition: all 100ms;*/
             display: inline-flex;
             align-items: center;
             justify-content: center;
         }
 
         .btn-group .tmm-menu-btn.clicked {
-            top: 0;
-            box-shadow: none;
-            background-color: #292929;
+            top: -2px;
+            box-shadow: 0 0 8px -6px #141414;
+            background-color: #FFFEFC;
         }
 
         .btn-group .tmm-menu-btn img {
             height: 100%;
         }
 
+        .btn-group.acc-group .tmm-menu-btn img {
+            height: 80%;
+        }
+
         .ddTmmList {
             position: absolute;
-            left: 0;
+            left: -0.5em;
             top: 100%;
-            background-color: #2B2B2B;
-            box-shadow: 0 0 6px -2px #141414;
+            background-color: #FFFEFC;
+            box-shadow: 0 0 20px -8px #111;
             z-index: 3;
-            margin-top: 6px;
-            max-height: 10em;
+            margin-top: -3em;
             overflow-y: scroll;
             height: 0;
             opacity: 0;
             transition: all 100ms;
-            transition-delay: 100ms;
         }
 
         .clicked .ddTmmList {
-            height: auto;
+            height: 10em;
             opacity: 1;
         }
 
         .ddTmmItem {
-            padding: 0.4em;
+            padding: 0.5em 1.5em;
             transition: all 200ms;
         }
 
         .ddTmmItem:hover {
-            background-color: #2F2F2F;
+            background-color: #FFF;
+            color: #4C423D;
         }
 
         .ddTmmItem:not(:last-child) {
-            border-bottom: 0.1em solid #232323;
+            border-bottom: 2px solid #EFE3D5;
         }
 
         #selectedMakamName {
@@ -167,12 +169,12 @@
                 background-color: #fff;
             }
 
-            #dv-top, #dv-score-menu, .no-print {
-                display: none;
+            .shadowed-porte {
+                box-shadow: none;
             }
 
-            .shadowed {
-                box-shadow: none;
+            #dv-top, #dv-score-menu, .no-print {
+                display: none;
             }
 
             @page {
@@ -264,7 +266,7 @@
 
 
         let dvGroupAcc = document.createElement('div');
-        dvGroupAcc.className = 'btn-group';
+        dvGroupAcc.className = 'btn-group acc-group';
 
         let btnB8 = document.createElement('div');
         btnB8.className = 'tmm-menu-btn';
@@ -1247,11 +1249,11 @@
             padding: {top: 20, right: 20, bottom: 20, left: 20},
             lineThickness: 1,
             porteLineHeight: 10,
-            noteColor: "#BC8D81",
-            mainColor: "#BCA181",
-            porteLineColor: "#536B77",
-            paperBgColor: "#2B2B2B",
-            ghostColor: "#726756",
+            noteColor: "#303548",
+            mainColor: "#635C57",
+            porteLineColor: "#BDA37E",
+            paperBgColor: "#FEF8EC",
+            ghostColor: "#B2ABA9",
             defMeasureCount: 4,
             maxPaperWidth: 1100
         };
