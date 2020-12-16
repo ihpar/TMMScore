@@ -432,7 +432,7 @@
         btn2.innerHTML = '<img alt="b2" src="static/img/nd2.svg">';
 
         let btn4 = document.createElement('div');
-        btn4.className = 'tmm-menu-btn';
+        btn4.className = 'tmm-menu-btn clicked';
         btn4.innerHTML = '<img alt="b4" src="static/img/nd4.svg">';
 
         let btn8 = document.createElement('div');
@@ -1423,8 +1423,8 @@
 
             svgElem.style.height = (configs.padding.top + configs.padding.bottom) + (numOfReqLines * 17 * configs.porteLineHeight) + 'px';
             // eof satir objects
-            gGhostNote.symbol = paper.path(symbols.n16);
-            gGhostNote.symbolR = paper.path(symbols.n16r);
+            gGhostNote.symbol = paper.path(symbols.n4);
+            gGhostNote.symbolR = paper.path(symbols.n4r);
             gGhostNote.symbol.attr({
                 fill: 'transparent'
             });
