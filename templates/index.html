@@ -15,7 +15,7 @@
         html, body {
             font-family: 'JetBrains Mono', monospace;
             font-size: 12pt;
-            color: #3D354D;
+            color: #243041;
             height: 100%;
             background-color: #F3F1E0;
         }
@@ -123,6 +123,7 @@
             left: -0.5em;
             top: 100%;
             background-color: #F9F7ED;
+            border: 1px solid #EFE3D5;
             box-shadow: 0 0 20px -8px #111;
             z-index: 3;
             margin-top: -3em;
@@ -148,23 +149,57 @@
         }
 
         .ddTmmItem:not(:last-child) {
-            border-bottom: 2px solid #EFE3D5;
+            border-bottom: 1px solid #EFE3D5;
         }
 
         #selectedMakamName {
-            width: 5em;
+            width: 7em;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             text-align: center;
         }
 
-        #selectedUsulName {
-            width: 6em;
+        #selectedUsulWrapper {
+            width: 7em;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             text-align: center;
+        }
+
+        .usulNum {
+            position: relative;
+            font-size: 0.8em;
+            top: -0.24em;
+            right: -0.3em;
+        }
+
+        .usulDivision {
+            display: inline-block;
+            transform: rotate(108deg);
+            width: 0.9em;
+            height: 1px;
+            background-color: #243041;
+            position: relative;
+            top: -0.3em;
+        }
+
+        .usulDen {
+            position: relative;
+            font-size: 0.8em;
+            top: 0.15em;
+            left: -0.25em;
+        }
+
+        .usulName {
+            margin-left: 0.5em;
+        }
+
+        .ddItemMeter {
+            width: 3em;
+            display: inline-block;
+            text-align: right;
         }
 
         @media print {
@@ -225,7 +260,9 @@
         let sender = e.currentTarget;
         let meter = JSON.parse(sender.getAttribute('data-meter'));
         let usul = JSON.parse(sender.getAttribute('data-usul'));
-        document.getElementById('selectedUsulName').innerHTML = meter[0] + '/' + meter[1] + ' ' + usul;
+        document.getElementById('selectedUsulNum').innerHTML = meter[0];
+        document.getElementById('selectedUsulDen').innerHTML = meter[1];
+        document.getElementById('selectedUsulName').innerHTML = usul;
     }
 
     function createTMMMenu(containerSelector) {
@@ -284,15 +321,24 @@
             {name: "Aksak", meter: [9, 8]},
             {name: "Ağıraksak", meter: [9, 4]},
             {name: "Curcuna", meter: [10, 8]},
+            {name: "Lenk Fahte", meter: [10, 4]},
+            {name: "Dolap", meter: [12, 8]},
+            {name: "Çenber", meter: [24, 4]},
             {name: "Devr-i Kebîr", meter: [28, 4]},
             {name: "Hafif", meter: [32, 8]},
             {name: "Hâvî", meter: [64, 4]},
+            {name: "Darb-i Fetih", meter: [88, 4]},
             {name: "Çar", meter: [124, 4]}
         ];
 
         let meterInput = document.createElement('div');
         meterInput.className = 'tmm-menu-btn';
-        meterInput.innerHTML = '<span id="selectedUsulName">9/8 Aksak</span>';
+        meterInput.innerHTML = '<div id="selectedUsulWrapper">' +
+            '<span class="usulNum" id="selectedUsulNum">9</span>' +
+            '<span class="usulDivision"></span>' +
+            '<span class="usulDen" id="selectedUsulDen">8</span>' +
+            '<span class="usulName" id="selectedUsulName">Aksak</span>' +
+            '</div>';
         meterInput.style.position = 'relative';
 
         let ddUsul = document.createElement('div');
@@ -300,7 +346,12 @@
         for (let u of tmmUsuls) {
             let ddItem = document.createElement('div');
             ddItem.className = 'ddTmmItem';
-            ddItem.innerHTML = u.meter[0] + '/' + u.meter[1] + ' ' + u.name;
+            ddItem.innerHTML = '<span class="ddItemMeter">' +
+                '<span class="usulNum">' + u.meter[0] + '</span>' +
+                '<span class="usulDivision"></span>' +
+                '<span class="usulDen">' + u.meter[1] + '</span>' +
+                '</span>' +
+                '<span class="usulName">' + u.name + '</span>';
             ddItem.setAttribute('data-meter', JSON.stringify(u.meter));
             ddItem.setAttribute('data-usul', JSON.stringify(u.name));
             ddItem.addEventListener('click', usulMenuItemClick);
@@ -1282,7 +1333,7 @@
             padding: {top: 20, right: 20, bottom: 20, left: 20},
             lineThickness: 1,
             porteLineHeight: 10,
-            noteColor: "#3D354D",
+            noteColor: "#243041",
             mainColor: "#565345",
             porteLineColor: "#BDA37E",
             paperBgColor: "#F7F5EA",
