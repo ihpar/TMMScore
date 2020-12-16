@@ -1230,20 +1230,6 @@
     }
 
     function TmmScore(containerSelector) {
-        /*
-        let configs = {
-            padding: {top: 20, right: 20, bottom: 20, left: 20},
-            lineThickness: 0.5,
-            porteLineHeight: 10,
-            noteColor: "#2d3337",
-            mainColor: "#3b4552",
-            porteLineColor: "#4e5872",
-            paperBgColor: "#f6f7f6",
-            ghostColor: "#847476",
-            defMeasureCount: 4,
-            maxPaperWidth: 1100
-        };
-        */
         let configs = {
             padding: {top: 20, right: 20, bottom: 20, left: 20},
             lineThickness: 1,
@@ -1367,6 +1353,12 @@
 
                 for (let satir of satirlar) {
                     satir.handleMouse(x, y);
+                }
+            }, false);
+
+            svgElem.addEventListener('mouseleave', function (evt) {
+                for (let satir of satirlar) {
+                    satir.handleMouse(-1, -1);
                 }
             }, false);
 
