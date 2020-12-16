@@ -129,6 +129,7 @@
             overflow-y: scroll;
             height: 0;
             opacity: 0;
+            width: max-content;
             transition: all 100ms;
         }
 
@@ -138,7 +139,7 @@
         }
 
         .ddTmmItem {
-            padding: 0.5em 1.5em;
+            padding: 0.5em 1em;
             transition: all 200ms;
         }
 
@@ -152,6 +153,14 @@
 
         #selectedMakamName {
             width: 5em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+        }
+
+        #selectedUsulName {
+            width: 6em;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -210,7 +219,13 @@
         let selectedMakam = sender.innerHTML;
         let accidentals = JSON.parse(sender.getAttribute('data-accidentals'));
         document.getElementById('selectedMakamName').innerHTML = selectedMakam;
-        console.log(accidentals);
+    }
+
+    function usulMenuItemClick(e) {
+        let sender = e.currentTarget;
+        let meter = JSON.parse(sender.getAttribute('data-meter'));
+        let usul = JSON.parse(sender.getAttribute('data-usul'));
+        document.getElementById('selectedUsulName').innerHTML = meter[0] + '/' + meter[1] + ' ' + usul;
     }
 
     function createTMMMenu(containerSelector) {
@@ -256,9 +271,42 @@
         }
         makamInput.appendChild(ddMakam);
 
+        let tmmUsuls = [
+            {name: "Nîmsofyan", meter: [2, 4]},
+            {name: "Yürüksofyan", meter: [2, 4]},
+            {name: "Semâî", meter: [3, 4]},
+            {name: "Sofyan", meter: [4, 4]},
+            {name: "Türkaksağı", meter: [5, 8]},
+            {name: "Yürüksemâî", meter: [6, 8]},
+            {name: "Senginsemâî", meter: [6, 4]},
+            {name: "Devr-i Hindî", meter: [7, 8]},
+            {name: "Düyek", meter: [8, 8]},
+            {name: "Aksak", meter: [9, 8]},
+            {name: "Ağıraksak", meter: [9, 4]},
+            {name: "Curcuna", meter: [10, 8]},
+            {name: "Devr-i Kebîr", meter: [28, 4]},
+            {name: "Hafif", meter: [32, 8]},
+            {name: "Hâvî", meter: [64, 4]},
+            {name: "Çar", meter: [124, 4]}
+        ];
+
         let meterInput = document.createElement('div');
         meterInput.className = 'tmm-menu-btn';
-        meterInput.innerHTML = '9/8';
+        meterInput.innerHTML = '<span id="selectedUsulName">9/8 Aksak</span>';
+        meterInput.style.position = 'relative';
+
+        let ddUsul = document.createElement('div');
+        ddUsul.className = 'ddTmmList';
+        for (let u of tmmUsuls) {
+            let ddItem = document.createElement('div');
+            ddItem.className = 'ddTmmItem';
+            ddItem.innerHTML = u.meter[0] + '/' + u.meter[1] + ' ' + u.name;
+            ddItem.setAttribute('data-meter', JSON.stringify(u.meter));
+            ddItem.setAttribute('data-usul', JSON.stringify(u.name));
+            ddItem.addEventListener('click', usulMenuItemClick);
+            ddUsul.appendChild(ddItem);
+        }
+        meterInput.appendChild(ddUsul);
 
         dvGroupGlobals.appendChild(makamInput);
         dvGroupGlobals.appendChild(meterInput);
