@@ -131,7 +131,7 @@
             height: 0;
             opacity: 0;
             width: max-content;
-            transition: all 100ms;
+            transition: height, opacity 100ms;
         }
 
         .tmm-menu-btn-no:focus .ddTmmList {
@@ -141,7 +141,7 @@
 
         .ddTmmItem {
             padding: 0.5em 1em;
-            transition: all 200ms;
+            transition: background-color 200ms;
         }
 
         .ddTmmItem:hover {
@@ -152,7 +152,7 @@
             border-bottom: 1px solid #EFE3D5;
         }
 
-        #selectedMakamName {
+        #selectedMakamName, #selectedUsulWrapper {
             width: 7em;
             white-space: nowrap;
             overflow: hidden;
@@ -160,12 +160,10 @@
             text-align: center;
         }
 
-        #selectedUsulWrapper {
-            width: 7em;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            text-align: center;
+        .ddUsulWrapper {
+            width: 3em;
+            display: inline-block;
+            text-align: right;
         }
 
         .usulNum {
@@ -194,12 +192,6 @@
 
         .usulName {
             margin-left: 0.5em;
-        }
-
-        .ddItemMeter {
-            width: 3em;
-            display: inline-block;
-            text-align: right;
         }
 
         @media print {
@@ -352,7 +344,7 @@
         for (let u of tmmUsuls) {
             let ddItem = document.createElement('div');
             ddItem.className = 'ddTmmItem';
-            ddItem.innerHTML = '<span class="ddItemMeter">' +
+            ddItem.innerHTML = '<span class="ddUsulWrapper">' +
                 '<span class="usulNum">' + u.meter[0] + '</span>' +
                 '<span class="usulDivision"></span>' +
                 '<span class="usulDen">' + u.meter[1] + '</span>' +
