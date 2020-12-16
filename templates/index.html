@@ -15,9 +15,9 @@
         html, body {
             font-family: 'JetBrains Mono', monospace;
             font-size: 12pt;
-            color: #635C57;
+            color: #3D354D;
             height: 100%;
-            background-color: #F2EDE6;
+            background-color: #F3F1E0;
         }
 
         body {
@@ -91,14 +91,13 @@
 
         .btn-group .tmm-menu-btn {
             position: relative;
-            border: 1px solid #EFE3D5;
+            border: 1px solid #EAE7DA;
             padding: 0.2em 0.4em;
             cursor: pointer;
             top: 0;
             box-shadow: none;
-            background-color: #F9F3E8;
+            background-color: #F7F5EA;
             height: 1.8em;
-            /*transition: all 100ms;*/
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -106,8 +105,9 @@
 
         .btn-group .tmm-menu-btn.clicked {
             top: -2px;
-            box-shadow: 0 0 8px -6px #141414;
-            background-color: #FFFEFC;
+            box-shadow: 0 2px 8px -6px #141414;
+            background-color: #FCFBF2;
+            z-index: 1;
         }
 
         .btn-group .tmm-menu-btn img {
@@ -122,7 +122,7 @@
             position: absolute;
             left: -0.5em;
             top: 100%;
-            background-color: #FFFEFC;
+            background-color: #F9F7ED;
             box-shadow: 0 0 20px -8px #111;
             z-index: 3;
             margin-top: -3em;
@@ -144,7 +144,6 @@
 
         .ddTmmItem:hover {
             background-color: #FFF;
-            color: #4C423D;
         }
 
         .ddTmmItem:not(:last-child) {
@@ -1249,10 +1248,10 @@
             padding: {top: 20, right: 20, bottom: 20, left: 20},
             lineThickness: 1,
             porteLineHeight: 10,
-            noteColor: "#303548",
-            mainColor: "#635C57",
+            noteColor: "#3D354D",
+            mainColor: "#565345",
             porteLineColor: "#BDA37E",
-            paperBgColor: "#FEF8EC",
+            paperBgColor: "#F7F5EA",
             ghostColor: "#B2ABA9",
             defMeasureCount: 4,
             maxPaperWidth: 1100
