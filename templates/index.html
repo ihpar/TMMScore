@@ -148,7 +148,7 @@
         duration: "1/4",
         ghostNote: {symbol: null, symbolR: null},
         dot: false,
-        rest: false,
+        rest: null,
         loc: null
     };
 
@@ -163,77 +163,122 @@
 
         if (!sender.classList.contains('clicked')) {
             // activate
-            if (isAcc || isRest || isLoc) {
+            if (isAcc) {
+                // deactivate rest
+                mParams.rest = null;
+                document.querySelectorAll('.rest-btn').forEach((button) => {
+                    button.classList.remove('clicked');
+                });
+                // deactivate loc
+                mParams.loc = null;
+                document.querySelectorAll('.loc-btn').forEach((button) => {
+                    button.classList.remove('clicked');
+                });
+                // activate acc
                 document.querySelectorAll('.acc-btn').forEach((button) => {
                     button.classList.remove('clicked');
                 });
-            }
-            if (isAcc) {
-                // deactivate rest
-                mParams.rest = false;
-                document.querySelector('.rest-btn').classList.remove('clicked');
-                // activate acc
                 mParams.acci = sender.getAttribute('data-acc-val');
             }
-            if (isRest) {
-                mParams.rest = true;
-                mParams.acci = null;
-                mParams.dot = false;
-                document.querySelector('.dot-btn').classList.remove('clicked');
-            }
+
             if (isDur) {
+                // deactivate rest
+                mParams.rest = null;
+                document.querySelectorAll('.rest-btn').forEach((button) => {
+                    button.classList.remove('clicked');
+                });
+                // deactivate loc
+                mParams.loc = null;
+                document.querySelectorAll('.loc-btn').forEach((button) => {
+                    button.classList.remove('clicked');
+                });
+                // activate dur
                 document.querySelectorAll('.dur-btn').forEach((button) => {
                     button.classList.remove('clicked');
                 });
                 mParams.duration = sender.getAttribute('data-dur-val');
             }
+
             if (isDot) {
                 if (!mParams.duration) {
                     return;
                 }
-                mParams.acci = null;
                 mParams.dot = true;
-                mParams.rest = false;
-                document.querySelector('.rest-btn').classList.remove('clicked');
             }
-            if (!isLoc) {
-                mParams.loc = null;
-                document.querySelectorAll('.loc-btn').forEach((button) => {
+
+            if (isRest) {
+                // deactivate acci
+                mParams.acci = null;
+                document.querySelectorAll('.acc-btn').forEach((button) => {
                     button.classList.remove('clicked');
                 });
-            }
-            if (isLoc) {
-                mParams.acci = null;
+                // deactivate dur
                 mParams.duration = null;
                 document.querySelectorAll('.dur-btn').forEach((button) => {
                     button.classList.remove('clicked');
                 });
+                // deactivate dot
                 mParams.dot = false;
                 document.querySelector('.dot-btn').classList.remove('clicked');
-                mParams.rest = false;
-                document.querySelector('.rest-btn').classList.remove('clicked');
+                // deactivate loc
+                mParams.loc = null;
+                document.querySelectorAll('.loc-btn').forEach((button) => {
+                    button.classList.remove('clicked');
+                });
+                // activate rest
+                document.querySelectorAll('.rest-btn').forEach((button) => {
+                    button.classList.remove('clicked');
+                });
+                mParams.rest = sender.getAttribute('data-rest-val');
+            }
+
+            if (isLoc) {
+                // deactivate acci
+                mParams.acci = null;
+                document.querySelectorAll('.acc-btn').forEach((button) => {
+                    button.classList.remove('clicked');
+                });
+                // deactivate dur
+                mParams.duration = null;
+                document.querySelectorAll('.dur-btn').forEach((button) => {
+                    button.classList.remove('clicked');
+                });
+                // deactivate dot
+                mParams.dot = false;
+                document.querySelector('.dot-btn').classList.remove('clicked');
+                // deactivate rest
+                mParams.rest = null;
+                document.querySelectorAll('.rest-btn').forEach((button) => {
+                    button.classList.remove('clicked');
+                });
+                // activate loc
                 document.querySelectorAll('.loc-btn').forEach((button) => {
                     button.classList.remove('clicked');
                 });
                 mParams.loc = sender.getAttribute('data-loc-val');
             }
+
             sender.classList.add('clicked');
+
         } else {
             // deactivate sender
             if (isAcc) {
                 mParams.acci = null;
             }
             if (isRest) {
-                mParams.rest = false;
+                mParams.rest = null;
             }
             if (isDur) {
                 mParams.duration = null;
+                // deactivate dot
+                mParams.dot = false;
+                document.querySelector('.dot-btn').classList.remove('clicked');
             }
             if (isDot) {
                 mParams.dot = false;
             }
             if (isLoc) {
-                mParams.loc = false;
+                mParams.loc = null;
             }
             sender.classList.remove('clicked');
         }

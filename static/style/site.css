@@ -136,11 +136,12 @@ body ::-webkit-scrollbar-thumb:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    transition: all 100ms;
 }
 
-.btn-group .tmm-menu-btn-no:focus, .btn-group .tmm-menu-btn.clicked {
+.btn-group .tmm-menu-btn.clicked, .btn-group .tmm-menu-btn-no:focus {
     top: -2px;
-    box-shadow: 0 2px 8px -6px #141414;
+    box-shadow: 0 2px 8px -4px #141414;
     background-color: #FCFBF2;
     outline: none;
 }
