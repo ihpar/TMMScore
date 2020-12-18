@@ -15,7 +15,7 @@ time, mark, audio, video {
     padding: 0;
     border: 0;
     font-size: 100%;
-    font: inherit;
+    font-family: inherit;
     vertical-align: baseline;
 }
 
@@ -39,7 +39,6 @@ blockquote, q {
 
 blockquote:before, blockquote:after,
 q:before, q:after {
-    content: '';
     content: none;
 }
 
@@ -68,7 +67,7 @@ body ::-webkit-scrollbar {
 
 body ::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.1);
-    border-radius: 0px;
+    border-radius: 0;
 }
 
 body ::-webkit-scrollbar-thumb {
@@ -128,7 +127,7 @@ body ::-webkit-scrollbar-thumb:hover {
 .btn-group .tmm-menu-btn, .btn-group .tmm-menu-btn-no {
     position: relative;
     border: 1px solid #EAE7DA;
-    padding: 0.2em 0.4em;
+    padding: 0.2em 0.3em;
     cursor: pointer;
     top: 0;
     box-shadow: none;
@@ -189,7 +188,7 @@ body ::-webkit-scrollbar-thumb:hover {
 }
 
 #selectedMakamName, #selectedUsulWrapper {
-    width: 7em;
+    width: 6em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

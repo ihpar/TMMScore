@@ -24,278 +24,6 @@
 <script type="text/javascript">
     "use strict";
 
-    function tmmMenuButtonClick(e) {
-        let sender = e.currentTarget;
-        if (sender.classList.contains("clicked")) {
-            sender.classList.remove("clicked");
-        } else {
-            sender.classList.add("clicked");
-        }
-    }
-
-    function makamMenuItemClick(e) {
-        let sender = e.currentTarget;
-        let selectedMakam = sender.innerHTML;
-        let accidentals = JSON.parse(sender.getAttribute('data-accidentals'));
-        document.getElementById('selectedMakamName').innerHTML = selectedMakam;
-        sender.parentNode.parentNode.blur();
-        console.log(accidentals);
-    }
-
-    function usulMenuItemClick(e) {
-        let sender = e.currentTarget;
-        let meter = JSON.parse(sender.getAttribute('data-meter'));
-        let usul = JSON.parse(sender.getAttribute('data-usul'));
-        document.getElementById('selectedUsulNum').innerHTML = meter[0];
-        document.getElementById('selectedUsulDen').innerHTML = meter[1];
-        document.getElementById('selectedUsulName').innerHTML = usul;
-        sender.parentNode.parentNode.blur();
-    }
-
-    function createTMMMenu(containerSelector) {
-        let tabIndex = 1;
-        let tmmMakams = [
-            {name: "Do Majör", accidentals: []},
-            {name: "Acemaşîran", accidentals: ['B4b5']},
-            {name: "Acemkürdî", accidentals: ['B4b5']},
-            {name: "Bestenigâr", accidentals: ['B4b1', 'D5b4']},
-            {name: "Beyâtî", accidentals: ['B4b1']},
-            {name: "Bûselik", accidentals: []},
-            {name: "Ferahfeza", accidentals: ['B4b1', 'F5#4']},
-            {name: "Hicaz", accidentals: ['B4b4', 'F5#4', 'C5#4']},
-            {name: "Hüseynî", accidentals: ['B4b1', 'F5#4']},
-            {name: "Kürdî", accidentals: ['B4b5']},
-            {name: "Muhayyer", accidentals: ['B4b1', 'F5#4']},
-            {name: "Nihâvent", accidentals: ['B4b5', 'E5b5']},
-            {name: "Rast", accidentals: ['B4b1', 'F5#4']},
-            {name: "Segâh", accidentals: ['B4b1', 'E5b1', 'F5#4']},
-            {name: "Uşşak", accidentals: ['B4b1']}
-        ];
-
-        let scoreMenu = document.createElement('div');
-        scoreMenu.setAttribute('id', 'dv-score-menu');
-        scoreMenu.className = 'dv-score-menu';
-
-        let dvGroupGlobals = document.createElement('div');
-        dvGroupGlobals.className = 'btn-group';
-
-        let makamInput = document.createElement('div');
-        makamInput.tabIndex = tabIndex;
-        tabIndex += 1;
-        makamInput.className = 'tmm-menu-btn-no';
-        makamInput.innerHTML = '<span id="selectedMakamName">Hicaz</span>';
-        makamInput.style.position = 'relative';
-
-        let ddMakam = document.createElement('div');
-        ddMakam.className = 'ddTmmList';
-        for (let m of tmmMakams) {
-            let ddItem = document.createElement('div');
-            ddItem.className = 'ddTmmItem';
-            ddItem.innerHTML = m.name;
-            ddItem.setAttribute('data-accidentals', JSON.stringify(m.accidentals));
-            ddItem.addEventListener('click', makamMenuItemClick);
-            ddMakam.appendChild(ddItem);
-        }
-        makamInput.appendChild(ddMakam);
-
-        let tmmUsuls = [
-            {name: "Nîmsofyan", meter: [2, 4]},
-            {name: "Yürüksofyan", meter: [2, 4]},
-            {name: "Semâî", meter: [3, 4]},
-            {name: "Sofyan", meter: [4, 4]},
-            {name: "Türkaksağı", meter: [5, 8]},
-            {name: "Yürüksemâî", meter: [6, 8]},
-            {name: "Senginsemâî", meter: [6, 4]},
-            {name: "Devr-i Hindî", meter: [7, 8]},
-            {name: "Düyek", meter: [8, 8]},
-            {name: "Aksak", meter: [9, 8]},
-            {name: "Ağıraksak", meter: [9, 4]},
-            {name: "Curcuna", meter: [10, 8]},
-            {name: "Lenk Fahte", meter: [10, 4]},
-            {name: "Dolap", meter: [12, 8]},
-            {name: "Çenber", meter: [24, 4]},
-            {name: "Devr-i Kebîr", meter: [28, 4]},
-            {name: "Hafif", meter: [32, 8]},
-            {name: "Hâvî", meter: [64, 4]},
-            {name: "Darb-i Fetih", meter: [88, 4]},
-            {name: "Çar", meter: [124, 4]}
-        ];
-
-        let meterInput = document.createElement('div');
-        meterInput.className = 'tmm-menu-btn-no';
-        meterInput.tabIndex = tabIndex;
-        meterInput.innerHTML = '<div id="selectedUsulWrapper">' +
-            '<span class="usulNum" id="selectedUsulNum">9</span>' +
-            '<span class="usulDivision"></span>' +
-            '<span class="usulDen" id="selectedUsulDen">8</span>' +
-            '<span class="usulName" id="selectedUsulName">Aksak</span>' +
-            '</div>';
-        meterInput.style.position = 'relative';
-
-        let ddUsul = document.createElement('div');
-        ddUsul.className = 'ddTmmList';
-        for (let u of tmmUsuls) {
-            let ddItem = document.createElement('div');
-            ddItem.className = 'ddTmmItem';
-            ddItem.innerHTML = '<span class="ddUsulWrapper">' +
-                '<span class="usulNum">' + u.meter[0] + '</span>' +
-                '<span class="usulDivision"></span>' +
-                '<span class="usulDen">' + u.meter[1] + '</span>' +
-                '</span>' +
-                '<span class="usulName">' + u.name + '</span>';
-            ddItem.setAttribute('data-meter', JSON.stringify(u.meter));
-            ddItem.setAttribute('data-usul', JSON.stringify(u.name));
-            ddItem.addEventListener('click', usulMenuItemClick);
-            ddUsul.appendChild(ddItem);
-        }
-        meterInput.appendChild(ddUsul);
-
-        dvGroupGlobals.appendChild(makamInput);
-        dvGroupGlobals.appendChild(meterInput);
-
-
-        let dvGroupAcc = document.createElement('div');
-        dvGroupAcc.className = 'btn-group acc-group';
-
-        let btnB8 = document.createElement('div');
-        btnB8.className = 'tmm-menu-btn';
-        btnB8.innerHTML = '<img alt="b8" src="static/img/b8.svg">';
-
-        let btnB5 = document.createElement('div');
-        btnB5.className = 'tmm-menu-btn';
-        btnB5.innerHTML = '<img alt="b8" src="static/img/b5.svg">';
-
-        let btnB4 = document.createElement('div');
-        btnB4.className = 'tmm-menu-btn';
-        btnB4.innerHTML = '<img alt="b8" src="static/img/b4.svg">';
-
-        let btnB1 = document.createElement('div');
-        btnB1.className = 'tmm-menu-btn';
-        btnB1.innerHTML = '<img alt="b8" src="static/img/b1.svg">';
-
-        let btnNatural = document.createElement('div');
-        btnNatural.className = 'tmm-menu-btn';
-        btnNatural.innerHTML = '<img alt="b8" src="static/img/nat.svg">';
-
-        let btnD1 = document.createElement('div');
-        btnD1.className = 'tmm-menu-btn';
-        btnD1.innerHTML = '<img alt="b8" src="static/img/d1.svg">';
-
-        let btnD4 = document.createElement('div');
-        btnD4.className = 'tmm-menu-btn';
-        btnD4.innerHTML = '<img alt="b8" src="static/img/d4.svg">';
-
-        let btnD5 = document.createElement('div');
-        btnD5.className = 'tmm-menu-btn';
-        btnD5.innerHTML = '<img alt="b8" src="static/img/d5.svg">';
-
-        let btnD8 = document.createElement('div');
-        btnD8.className = 'tmm-menu-btn';
-        btnD8.innerHTML = '<img alt="b8" src="static/img/d8.svg">';
-
-        dvGroupAcc.appendChild(btnB8);
-        dvGroupAcc.appendChild(btnB5);
-        dvGroupAcc.appendChild(btnB4);
-        dvGroupAcc.appendChild(btnB1);
-        dvGroupAcc.appendChild(btnNatural);
-        dvGroupAcc.appendChild(btnD1);
-        dvGroupAcc.appendChild(btnD4);
-        dvGroupAcc.appendChild(btnD5);
-        dvGroupAcc.appendChild(btnD8);
-
-        let dvGroupRests = document.createElement('div');
-        dvGroupRests.className = 'btn-group';
-
-        let btnRest4 = document.createElement('div');
-        btnRest4.className = 'tmm-menu-btn';
-        btnRest4.innerHTML = '<img alt="b8" src="static/img/rest4.svg">';
-
-        dvGroupRests.appendChild(btnRest4);
-
-
-        let dvGroupDurs = document.createElement('div');
-        dvGroupDurs.className = 'btn-group';
-
-        let btn1 = document.createElement('div');
-        btn1.className = 'tmm-menu-btn';
-        btn1.innerHTML = '<img alt="b1" src="static/img/nd1.svg">';
-
-        let btn2 = document.createElement('div');
-        btn2.className = 'tmm-menu-btn';
-        btn2.innerHTML = '<img alt="b2" src="static/img/nd2.svg">';
-
-        let btn4 = document.createElement('div');
-        btn4.className = 'tmm-menu-btn clicked';
-        btn4.innerHTML = '<img alt="b4" src="static/img/nd4.svg">';
-
-        let btn8 = document.createElement('div');
-        btn8.className = 'tmm-menu-btn';
-        btn8.innerHTML = '<img alt="b8" src="static/img/nd8.svg">';
-
-        let btn16 = document.createElement('div');
-        btn16.className = 'tmm-menu-btn';
-        btn16.innerHTML = '<img alt="b16" src="static/img/nd16.svg">';
-
-        let btn32 = document.createElement('div');
-        btn32.className = 'tmm-menu-btn';
-        btn32.innerHTML = '<img alt="b32" src="static/img/nd32.svg">';
-
-        let btnDot = document.createElement('div');
-        btnDot.className = 'tmm-menu-btn';
-        btnDot.innerHTML = '<img alt="bd" src="static/img/dot.svg">';
-
-        dvGroupDurs.appendChild(btn1);
-        dvGroupDurs.appendChild(btn2);
-        dvGroupDurs.appendChild(btn4);
-        dvGroupDurs.appendChild(btn8);
-        dvGroupDurs.appendChild(btn16);
-        dvGroupDurs.appendChild(btn32);
-        dvGroupDurs.appendChild(btnDot);
-
-        let dvGroupLocs = document.createElement('div');
-        dvGroupLocs.className = 'btn-group';
-
-        let btnRLeft = document.createElement('div');
-        btnRLeft.className = 'tmm-menu-btn';
-        btnRLeft.innerHTML = '<img alt="brl" src="static/img/repLeft.svg">';
-
-        let btnRRight = document.createElement('div');
-        btnRRight.className = 'tmm-menu-btn';
-        btnRRight.innerHTML = '<img alt="brr" src="static/img/repRight.svg">';
-
-        let btnVolta1 = document.createElement('div');
-        btnVolta1.className = 'tmm-menu-btn';
-        btnVolta1.innerHTML = '<img alt="bv1" src="static/img/volta1.svg">';
-
-        let btnVolta2 = document.createElement('div');
-        btnVolta2.className = 'tmm-menu-btn';
-        btnVolta2.innerHTML = '<img alt="bv1" src="static/img/volta2.svg">';
-
-        let btnSegno = document.createElement('div');
-        btnSegno.className = 'tmm-menu-btn';
-        btnSegno.innerHTML = '<img alt="bseg" src="static/img/segno.svg">';
-
-        dvGroupLocs.appendChild(btnRLeft);
-        dvGroupLocs.appendChild(btnRRight);
-        dvGroupLocs.appendChild(btnVolta1);
-        dvGroupLocs.appendChild(btnVolta2);
-        dvGroupLocs.appendChild(btnSegno);
-
-        scoreMenu.appendChild(dvGroupGlobals);
-        scoreMenu.appendChild(dvGroupAcc);
-        scoreMenu.appendChild(dvGroupRests);
-        scoreMenu.appendChild(dvGroupDurs);
-        scoreMenu.appendChild(dvGroupLocs);
-
-        document.querySelector(containerSelector).append(scoreMenu);
-
-
-        let tmmMenuButtons = document.querySelectorAll('.tmm-menu-btn');
-        for (let tmmMenuButton of tmmMenuButtons) {
-            tmmMenuButton.addEventListener('click', tmmMenuButtonClick);
-        }
-    }
-
     const notePositions = {
         c3: 8.5,
         d3: 8,
@@ -413,11 +141,332 @@
         r32: "M 8.2992383,0.78942671 C 8.3654371,0.66936937 8.2607415,0.52620333 8.0892915,0.72137323 7.8135162,1.0353014 7.5300152,1.2443566 7.3616873,1.3386567 6.8867602,1.6047006 6.2849125,1.885614 5.8597271,1.8648124 5.8912125,1.744091 5.9080929,1.619885 5.9080929,1.4951313 5.9080929,0.66948315 5.2387765,2.0108712e-4 4.4131442,0 h -1.588e-4 c -0.8258439,-5.820455e-5 -1.495425,0.66928206 -1.4955573,1.4951313 0,0.8261112 0.6696604,1.4848258 1.4957161,1.4957161 C 5.3537908,3.0029388 6.3094129,2.6195258 6.9122131,2.1124175 6.8052421,2.8271126 6.1324596,4.8667908 5.7232285,6.1153622 5.2994983,6.3336355 4.8230367,6.5254637 4.4690506,6.5081467 4.500536,6.387428 4.51739,6.263222 4.51739,6.1384683 4.51739,5.3127619 3.8479677,4.6434719 3.022256,4.643329 l 1.059e-4,-5.82e-5 C 2.196465,4.6431279 1.5268046,5.3125026 1.5266458,6.1384101 1.5265135,6.9645186 2.1963063,7.6232359 3.0223619,7.6341261 3.963035,7.6462176 4.9185777,7.2628046 5.5213779,6.7556936 5.4071044,7.5190244 4.6552379,9.5904659 4.2085948,10.934433 3.7809487,11.156135 3.3009152,11.354329 2.9425106,11.336782 2.9739696,11.216034 2.99085,11.091886 2.99085,10.967104 2.99085,10.141368 2.3213748,9.4721098 1.4956896,9.4719061 0.66976625,9.4717923 1.3231987e-4,10.141138 2.8213606e-8,10.967104 -1.587218e-4,11.79327 0.66963396,12.451958 1.4956896,12.462849 2.4046392,12.47494 3.3628542,12.115583 3.9705227,11.633973 3.3175046,13.534028 2.0317883,17.335434 1.7548754,17.979628 1.6366067,18.254676 2.720684,18.293464 2.7722777,18.04606 3.0844331,16.548335 8.1755985,1.0135791 8.2992383,0.78942671 Z"
     };
 
-    let gGhostNote = {
-        symbol: null,
-        symbolR: null,
-        isRest: false
+    let mParams = {
+        makam: {name: "Hicaz", accidentals: ['B4b4', 'F5#4', 'C5#4']},
+        usul: {name: "Aksak", meter: [9, 8]},
+        acci: null,
+        duration: "1/4",
+        ghostNote: {symbol: null, symbolR: null},
+        dot: false,
+        rest: false,
+        loc: null
     };
+
+    function tmmMenuButtonClick(e) {
+        let sender = e.currentTarget;
+
+        let isAcc = sender.classList.contains('acc-btn');
+        let isRest = sender.classList.contains('rest-btn');
+        let isDur = sender.classList.contains('dur-btn');
+        let isDot = sender.classList.contains('dot-btn');
+        let isLoc = sender.classList.contains('loc-btn');
+
+        if (!sender.classList.contains('clicked')) {
+            // activate
+            if (isAcc || isRest || isLoc) {
+                document.querySelectorAll('.acc-btn').forEach((button) => {
+                    button.classList.remove('clicked');
+                });
+            }
+            if (isAcc) {
+                // deactivate rest
+                mParams.rest = false;
+                document.querySelector('.rest-btn').classList.remove('clicked');
+                // activate acc
+                mParams.acci = sender.getAttribute('data-acc-val');
+            }
+            if (isRest) {
+                mParams.rest = true;
+                mParams.acci = null;
+                mParams.dot = false;
+                document.querySelector('.dot-btn').classList.remove('clicked');
+            }
+            if (isDur) {
+                document.querySelectorAll('.dur-btn').forEach((button) => {
+                    button.classList.remove('clicked');
+                });
+                mParams.duration = sender.getAttribute('data-dur-val');
+            }
+            if (isDot) {
+                if (!mParams.duration) {
+                    return;
+                }
+                mParams.acci = null;
+                mParams.dot = true;
+                mParams.rest = false;
+                document.querySelector('.rest-btn').classList.remove('clicked');
+            }
+            if (!isLoc) {
+                mParams.loc = null;
+                document.querySelectorAll('.loc-btn').forEach((button) => {
+                    button.classList.remove('clicked');
+                });
+            }
+            if (isLoc) {
+                mParams.acci = null;
+                mParams.duration = null;
+                document.querySelectorAll('.dur-btn').forEach((button) => {
+                    button.classList.remove('clicked');
+                });
+                mParams.dot = false;
+                document.querySelector('.dot-btn').classList.remove('clicked');
+                mParams.rest = false;
+                document.querySelector('.rest-btn').classList.remove('clicked');
+                document.querySelectorAll('.loc-btn').forEach((button) => {
+                    button.classList.remove('clicked');
+                });
+                mParams.loc = sender.getAttribute('data-loc-val');
+            }
+            sender.classList.add('clicked');
+        } else {
+            // deactivate sender
+            if (isAcc) {
+                mParams.acci = null;
+            }
+            if (isRest) {
+                mParams.rest = false;
+            }
+            if (isDur) {
+                mParams.duration = null;
+            }
+            if (isDot) {
+                mParams.dot = false;
+            }
+            if (isLoc) {
+                mParams.loc = false;
+            }
+            sender.classList.remove('clicked');
+        }
+    }
+
+    function makamMenuItemClick(e) {
+        let sender = e.currentTarget;
+        let selectedMakam = sender.innerHTML;
+        let accidentals = JSON.parse(sender.getAttribute('data-accidentals'));
+        document.getElementById('selectedMakamName').innerHTML = selectedMakam;
+        sender.parentNode.parentNode.blur();
+        mParams.makam.name = selectedMakam;
+        mParams.makam.accidentals = accidentals.slice();
+    }
+
+    function usulMenuItemClick(e) {
+        let sender = e.currentTarget;
+        let meter = JSON.parse(sender.getAttribute('data-meter'));
+        let usul = JSON.parse(sender.getAttribute('data-usul'));
+        document.getElementById('selectedUsulNum').innerHTML = meter[0];
+        document.getElementById('selectedUsulDen').innerHTML = meter[1];
+        document.getElementById('selectedUsulName').innerHTML = usul;
+        sender.parentNode.parentNode.blur();
+        mParams.usul.name = usul;
+        mParams.usul.meter = meter.slice();
+    }
+
+    function createTMMMenu(containerSelector) {
+        let tabIndex = 1;
+        let tmmMakams = [
+            {name: "Do Majör", accidentals: []},
+            {name: "Acemaşîran", accidentals: ['B4b5']},
+            {name: "Acemkürdî", accidentals: ['B4b5']},
+            {name: "Bestenigâr", accidentals: ['B4b1', 'D5b4']},
+            {name: "Beyâtî", accidentals: ['B4b1']},
+            {name: "Bûselik", accidentals: []},
+            {name: "Ferahfeza", accidentals: ['B4b1', 'F5#4']},
+            {name: "Hicaz", accidentals: ['B4b4', 'F5#4', 'C5#4']},
+            {name: "Hüseynî", accidentals: ['B4b1', 'F5#4']},
+            {name: "Kürdî", accidentals: ['B4b5']},
+            {name: "Muhayyer", accidentals: ['B4b1', 'F5#4']},
+            {name: "Nihâvent", accidentals: ['B4b5', 'E5b5']},
+            {name: "Rast", accidentals: ['B4b1', 'F5#4']},
+            {name: "Segâh", accidentals: ['B4b1', 'E5b1', 'F5#4']},
+            {name: "Uşşak", accidentals: ['B4b1']}
+        ];
+
+        let scoreMenu = document.createElement('div');
+        scoreMenu.setAttribute('id', 'dv-score-menu');
+        scoreMenu.className = 'dv-score-menu';
+
+        let dvGroupGlobals = document.createElement('div');
+        dvGroupGlobals.className = 'btn-group';
+
+        let makamInput = document.createElement('div');
+        makamInput.tabIndex = tabIndex;
+        tabIndex += 1;
+        makamInput.className = 'tmm-menu-btn-no';
+        makamInput.innerHTML = '<span id="selectedMakamName">Hicaz</span>';
+        makamInput.style.position = 'relative';
+
+        let ddMakam = document.createElement('div');
+        ddMakam.className = 'ddTmmList';
+        for (let m of tmmMakams) {
+            let ddItem = document.createElement('div');
+            ddItem.className = 'ddTmmItem';
+            ddItem.innerHTML = m.name;
+            ddItem.setAttribute('data-accidentals', JSON.stringify(m.accidentals));
+            ddItem.addEventListener('click', makamMenuItemClick);
+            ddMakam.appendChild(ddItem);
+        }
+        makamInput.appendChild(ddMakam);
+
+        let tmmUsuls = [
+            {name: "Nîmsofyan", meter: [2, 4]},
+            {name: "Yürüksofyan", meter: [2, 4]},
+            {name: "Semâî", meter: [3, 4]},
+            {name: "Sofyan", meter: [4, 4]},
+            {name: "Türkaksağı", meter: [5, 8]},
+            {name: "Yürüksemâî", meter: [6, 8]},
+            {name: "Senginsemâî", meter: [6, 4]},
+            {name: "Devr-i Hindî", meter: [7, 8]},
+            {name: "Düyek", meter: [8, 8]},
+            {name: "Aksak", meter: [9, 8]},
+            {name: "Ağıraksak", meter: [9, 4]},
+            {name: "Curcuna", meter: [10, 8]},
+            {name: "Lenk Fahte", meter: [10, 4]},
+            {name: "Dolap", meter: [12, 8]},
+            {name: "Çenber", meter: [24, 4]},
+            {name: "Devr-i Kebîr", meter: [28, 4]},
+            {name: "Hafif", meter: [32, 8]},
+            {name: "Hâvî", meter: [64, 4]},
+            {name: "Darb-i Fetih", meter: [88, 4]},
+            {name: "Çar", meter: [124, 4]}
+        ];
+
+        let meterInput = document.createElement('div');
+        meterInput.className = 'tmm-menu-btn-no';
+        meterInput.tabIndex = tabIndex;
+        meterInput.innerHTML = '<div id="selectedUsulWrapper">' +
+            '<span class="usulNum" id="selectedUsulNum">9</span>' +
+            '<span class="usulDivision"></span>' +
+            '<span class="usulDen" id="selectedUsulDen">8</span>' +
+            '<span class="usulName" id="selectedUsulName">Aksak</span>' +
+            '</div>';
+        meterInput.style.position = 'relative';
+
+        let ddUsul = document.createElement('div');
+        ddUsul.className = 'ddTmmList';
+        for (let u of tmmUsuls) {
+            let ddItem = document.createElement('div');
+            ddItem.className = 'ddTmmItem';
+            ddItem.innerHTML = '<span class="ddUsulWrapper">' +
+                '<span class="usulNum">' + u.meter[0] + '</span>' +
+                '<span class="usulDivision"></span>' +
+                '<span class="usulDen">' + u.meter[1] + '</span>' +
+                '</span>' +
+                '<span class="usulName">' + u.name + '</span>';
+            ddItem.setAttribute('data-meter', JSON.stringify(u.meter));
+            ddItem.setAttribute('data-usul', JSON.stringify(u.name));
+            ddItem.addEventListener('click', usulMenuItemClick);
+            ddUsul.appendChild(ddItem);
+        }
+        meterInput.appendChild(ddUsul);
+
+        dvGroupGlobals.appendChild(makamInput);
+        dvGroupGlobals.appendChild(meterInput);
+
+
+        let dvGroupAcc = document.createElement('div');
+        dvGroupAcc.className = 'btn-group acc-group';
+
+        let accidentalParams = [
+            {accVal: 'b8', img: 'b8.svg'},
+            {accVal: 'b5', img: 'b5.svg'},
+            {accVal: 'b4', img: 'b4.svg'},
+            {accVal: 'b1', img: 'b1.svg'},
+            {accVal: 'n', img: 'nat.svg'},
+            {accVal: 'd1', img: 'd1.svg'},
+            {accVal: 'd4', img: 'd4.svg'},
+            {accVal: 'd5', img: 'd5.svg'},
+            {accVal: 'd8', img: 'd8.svg'}
+        ];
+
+        for (let acc of accidentalParams) {
+            let btn = document.createElement('div');
+            btn.className = 'tmm-menu-btn acc-btn';
+            btn.setAttribute('data-acc-val', acc.accVal);
+            btn.innerHTML = '<img alt="' + acc.accVal + '" src="static/img/' + acc.img + '">';
+            dvGroupAcc.appendChild(btn);
+        }
+
+        let dvGroupDurs = document.createElement('div');
+        dvGroupDurs.className = 'btn-group';
+
+        let durParams = [
+            {durVal: 'n1', img: 'nd1.svg'},
+            {durVal: 'n2', img: 'nd2.svg'},
+            {durVal: 'n4', img: 'nd4.svg'},
+            {durVal: 'n8', img: 'nd8.svg'},
+            {durVal: 'n16', img: 'nd16.svg'},
+            {durVal: 'n32', img: 'nd32.svg'}
+        ];
+
+        for (let dur of durParams) {
+            let btn = document.createElement('div');
+            btn.className = 'tmm-menu-btn dur-btn';
+            btn.setAttribute('data-dur-val', dur.durVal);
+            btn.innerHTML = '<img alt="' + dur.durVal + '" src="static/img/' + dur.img + '">';
+            dvGroupDurs.appendChild(btn);
+        }
+
+        let btnDot = document.createElement('div');
+        btnDot.className = 'tmm-menu-btn dot-btn';
+        btnDot.innerHTML = '<img alt="bd" src="static/img/dot.svg">';
+
+        dvGroupDurs.appendChild(btnDot);
+
+        let dvGroupRests = document.createElement('div');
+        dvGroupRests.className = 'btn-group';
+
+        let restParams = [
+            {val: 'r1', img: 'rest1.svg'},
+            {val: 'r2', img: 'rest2.svg'},
+            {val: 'r4', img: 'rest4.svg'},
+            {val: 'r8', img: 'rest8.svg'},
+            {val: 'r16', img: 'rest16.svg'},
+            {val: 'r32', img: 'rest32.svg'}
+        ];
+
+        for (let rest of restParams) {
+            let btn = document.createElement('div');
+            btn.className = 'tmm-menu-btn rest-btn';
+            btn.setAttribute('data-rest-val', rest.val);
+            btn.innerHTML = '<img alt="' + rest.val + '" src="static/img/' + rest.img + '">';
+            dvGroupRests.appendChild(btn);
+        }
+
+        let dvGroupLocs = document.createElement('div');
+        dvGroupLocs.className = 'btn-group';
+
+        let locParams = [
+            {val: 'repL', img: 'repLeft.svg'},
+            {val: 'repR', img: 'repRight.svg'},
+            {val: 'n4', img: 'volta1.svg'},
+            {val: 'n8', img: 'volta2.svg'},
+            {val: 'n16', img: 'segno.svg'}
+        ];
+
+        for (let loc of locParams) {
+            let btn = document.createElement('div');
+            btn.className = 'tmm-menu-btn loc-btn';
+            btn.setAttribute('data-loc-val', loc.val);
+            btn.innerHTML = '<img alt="' + loc.val + '" src="static/img/' + loc.img + '">';
+            dvGroupLocs.appendChild(btn);
+        }
+
+        scoreMenu.appendChild(dvGroupGlobals);
+        scoreMenu.appendChild(dvGroupAcc);
+        scoreMenu.appendChild(dvGroupDurs);
+        scoreMenu.appendChild(dvGroupRests);
+        scoreMenu.appendChild(dvGroupLocs);
+
+        document.querySelector(containerSelector).append(scoreMenu);
+
+
+        let tmmMenuButtons = document.querySelectorAll('.tmm-menu-btn');
+        for (let tmmMenuButton of tmmMenuButtons) {
+            tmmMenuButton.addEventListener('click', tmmMenuButtonClick);
+        }
+
+        document.querySelector('[data-dur-val="n4"]').click();
+    }
 
     function Note(pitch, duration) {
         this.noteRoot = '';
@@ -841,17 +890,17 @@
                     });
                 }
                 if (y >= (this.allYPos[14] + this.porteLiHe / 4)) {
-                    gGhostNote.symbol.attr({
+                    mParams.ghostNote.symbol.attr({
                         fill: this.ghostColor
                     });
-                    gGhostNote.symbolR.attr({
+                    mParams.ghostNote.symbolR.attr({
                         fill: 'transparent'
                     });
                 } else {
-                    gGhostNote.symbol.attr({
+                    mParams.ghostNote.symbol.attr({
                         fill: 'transparent'
                     });
-                    gGhostNote.symbolR.attr({
+                    mParams.ghostNote.symbolR.attr({
                         fill: this.ghostColor
                     });
                 }
@@ -869,17 +918,17 @@
                 let scaleFactor = this.porteLiHe / 5;
                 let translateStr = 't ' + (x - this.porteLiHe / 2) + ' ' + snapPos;
                 let scaleStr = 's' + scaleFactor + ' 0 0';
-                gGhostNote.symbol.transform(translateStr + ' ' + scaleStr);
-                gGhostNote.symbolR.transform(translateStr + ' ' + scaleStr);
+                mParams.ghostNote.symbol.transform(translateStr + ' ' + scaleStr);
+                mParams.ghostNote.symbolR.transform(translateStr + ' ' + scaleStr);
             } else {
                 if (this.ghostsVisible) {
                     this.guideGroup.attr({
                         stroke: 'transparent'
                     });
-                    gGhostNote.symbol.attr({
+                    mParams.ghostNote.symbol.attr({
                         fill: 'transparent'
                     });
-                    gGhostNote.symbolR.attr({
+                    mParams.ghostNote.symbolR.attr({
                         fill: 'transparent'
                     });
                 }
@@ -1216,16 +1265,16 @@
 
             svgElem.style.height = (configs.padding.top + configs.padding.bottom) + (numOfReqLines * 17 * configs.porteLineHeight) + 'px';
             // eof satir objects
-            gGhostNote.symbol = paper.path(symbols.n4);
-            gGhostNote.symbolR = paper.path(symbols.n4r);
-            gGhostNote.symbol.attr({
+            mParams.ghostNote.symbol = paper.path(symbols.n4);
+            mParams.ghostNote.symbolR = paper.path(symbols.n4r);
+            mParams.ghostNote.symbol.attr({
                 fill: 'transparent'
             });
-            gGhostNote.symbolR.attr({
+            mParams.ghostNote.symbolR.attr({
                 fill: 'transparent'
             });
-            gGhostNote.symbol.addClass('no-print');
-            gGhostNote.symbolR.addClass('no-print');
+            mParams.ghostNote.symbol.addClass('no-print');
+            mParams.ghostNote.symbolR.addClass('no-print');
         };
 
         this.drawScore = function () {
@@ -1256,85 +1305,87 @@
         };
     }
 
-    let tmmScore = new TmmScore('#dv-tmm-wrapper');
+    (function allEry() {
+        let tmmScore = new TmmScore('#dv-tmm-wrapper');
 
-    tmmScore.setAccidentals(['B4b4', 'F5#4', 'C5#4']);
-    tmmScore.setMeter('9/8');
+        tmmScore.setAccidentals(['B4b4', 'F5#4', 'C5#4']);
+        tmmScore.setMeter('9/8');
 
-    let measure = new Measure();
-    measure.addNote('Do5#4', '1/16');
-    measure.addNote('Rest', '1/32');
-    measure.addNote('Rest', '1/16');
-    measure.addNote('Rest', '1/8');
-    measure.addNote('Rest', '1/4');
-    measure.addNote('Rest', '1/2');
-    measure.addNote('Rest', '1/1');
-    measure.addNote('Do6#4', '1/16');
-    measure.addNote('La4', '1/4');
+        let measure = new Measure();
+        measure.addNote('Do5#4', '1/16');
+        measure.addNote('Rest', '1/32');
+        measure.addNote('Rest', '1/16');
+        measure.addNote('Rest', '1/8');
+        measure.addNote('Rest', '1/4');
+        measure.addNote('Rest', '1/2');
+        measure.addNote('Rest', '1/1');
+        measure.addNote('Do6#4', '1/16');
+        measure.addNote('La4', '1/4');
 
-    tmmScore.addMeasure(measure);
+        tmmScore.addMeasure(measure);
 
-    measure = new Measure();
-    measure.addNote('Fa5', '1/2');
-    measure.addNote('Mi5', '1/4');
-    measure.addNote('Re5', '1/8');
-    measure.addNote('Do5#4', '1/16');
+        measure = new Measure();
+        measure.addNote('Fa5', '1/2');
+        measure.addNote('Mi5', '1/4');
+        measure.addNote('Re5', '1/8');
+        measure.addNote('Do5#4', '1/16');
 
-    tmmScore.addMeasure(measure);
+        tmmScore.addMeasure(measure);
 
-    measure = new Measure();
-    measure.addNote('Do5#4', '1/16');
-    measure.addNote('Re5', '1/32');
-    measure.addNote('Mi5', '1/16');
-    measure.addNote('Re5', '1/8');
-    measure.addNote('Do5#4', '1/4');
-    measure.addNote('Rest', '1/4');
-    measure.addNote('Si4b4', '1/1');
-    measure.addNote('La4', '1/16');
-    measure.addNote('La4', '1/4');
+        measure = new Measure();
+        measure.addNote('Do5#4', '1/16');
+        measure.addNote('Re5', '1/32');
+        measure.addNote('Mi5', '1/16');
+        measure.addNote('Re5', '1/8');
+        measure.addNote('Do5#4', '1/4');
+        measure.addNote('Rest', '1/4');
+        measure.addNote('Si4b4', '1/1');
+        measure.addNote('La4', '1/16');
+        measure.addNote('La4', '1/4');
 
-    tmmScore.addMeasure(measure);
+        tmmScore.addMeasure(measure);
 
-    measure = new Measure();
-    measure.addNote('Sol4', '1/2');
-    measure.addNote('La4', '1/4');
-    measure.addNote('Si4b4', '1/8');
-    measure.addNote('Do5#4', '1/16');
-    measure.addNote('Si4b4', '1/8');
-    measure.addNote('Do5#4', '1/16');
-    measure.addNote('Re5', '1/16');
+        measure = new Measure();
+        measure.addNote('Sol4', '1/2');
+        measure.addNote('La4', '1/4');
+        measure.addNote('Si4b4', '1/8');
+        measure.addNote('Do5#4', '1/16');
+        measure.addNote('Si4b4', '1/8');
+        measure.addNote('Do5#4', '1/16');
+        measure.addNote('Re5', '1/16');
 
-    tmmScore.addMeasure(measure);
+        tmmScore.addMeasure(measure);
 
-    measure = new Measure();
-    measure.addNote('Do5#4', '1/16');
-    measure.addNote('Si4b4', '1/8');
-    measure.addNote('La5', '1/8');
-    measure.addNote('Si5b4', '1/4');
-    measure.addNote('La5', '1/4');
-    measure.addNote('Sol5', '1/2');
-    measure.addNote('Fa5', '1/4');
-    measure.addNote('Mi5', '1/16');
-    measure.addNote('Re5', '1/16');
-    measure.addNote('Do5#4', '1/16');
+        measure = new Measure();
+        measure.addNote('Do5#4', '1/16');
+        measure.addNote('Si4b4', '1/8');
+        measure.addNote('La5', '1/8');
+        measure.addNote('Si5b4', '1/4');
+        measure.addNote('La5', '1/4');
+        measure.addNote('Sol5', '1/2');
+        measure.addNote('Fa5', '1/4');
+        measure.addNote('Mi5', '1/16');
+        measure.addNote('Re5', '1/16');
+        measure.addNote('Do5#4', '1/16');
 
-    tmmScore.addMeasure(measure);
+        tmmScore.addMeasure(measure);
 
-    measure = new Measure();
-    measure.addNote('Fa5', '1/2');
-    measure.addNote('Mi5', '1/4');
-    measure.addNote('Re5', '1/8');
-    measure.addNote('Do5#4', '1/16');
+        measure = new Measure();
+        measure.addNote('Fa5', '1/2');
+        measure.addNote('Mi5', '1/4');
+        measure.addNote('Re5', '1/8');
+        measure.addNote('Do5#4', '1/16');
 
-    tmmScore.addMeasure(measure);
+        tmmScore.addMeasure(measure);
 
-    measure = new Measure();
-    tmmScore.addMeasure(measure);
+        measure = new Measure();
+        tmmScore.addMeasure(measure);
 
-    measure = new Measure();
-    tmmScore.addMeasure(measure);
+        measure = new Measure();
+        tmmScore.addMeasure(measure);
 
-    tmmScore.drawScore();
+        tmmScore.drawScore();
+    })();
 
 </script>
 </body>
