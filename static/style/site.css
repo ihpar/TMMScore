@@ -230,6 +230,25 @@ body ::-webkit-scrollbar-thumb:hover {
     margin-left: 0.5em;
 }
 
+@media screen and (max-width: 1000px) {
+    html, body {
+        font-size: 11pt;
+    }
+}
+
+@media screen and (max-width: 890px) {
+    html, body {
+        font-size: 10pt;
+    }
+}
+
+@media screen and (max-width: 810px) {
+    html, body {
+        font-size: 9pt;
+    }
+}
+
+
 @media print {
     html {
         zoom: 75%;

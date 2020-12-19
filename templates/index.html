@@ -147,10 +147,11 @@
         usul: {name: "Aksak", meter: [9, 8]},
         acci: null,
         duration: "1/4",
-        ghostNote: {symbol: null, symbolR: null},
+        ghostNote: {symbol: null, symbolR: null, symbolDot: null},
         dot: false,
         rest: null,
-        loc: null
+        loc: null,
+        type: null
     };
 
     function tmmMenuButtonClick(e, paper) {
@@ -198,7 +199,15 @@
                     button.classList.remove('clicked');
                 });
 
+                mParams.type = 'note';
                 mParams.duration = sender.getAttribute('data-dur-val');
+
+                if (mParams.ghostNote.symbol) {
+                    mParams.ghostNote.symbol.remove();
+                }
+                if (mParams.ghostNote.symbolR) {
+                    mParams.ghostNote.symbolR.remove();
+                }
 
                 mParams.ghostNote.symbol = paper.path(symbols[mParams.duration]);
                 mParams.ghostNote.symbolR = paper.path(symbols[mParams.duration + "r"]);
@@ -210,7 +219,6 @@
                 });
                 mParams.ghostNote.symbol.addClass('no-print');
                 mParams.ghostNote.symbolR.addClass('no-print');
-
             }
 
             if (isDot) {
@@ -218,6 +226,12 @@
                     return;
                 }
                 mParams.dot = true;
+                if (!mParams.ghostNote.symbolDot) {
+                    mParams.ghostNote.symbolDot = paper.circle(-2, -2, 1);
+                    mParams.ghostNote.symbolDot.attr({
+                        fill: 'transparent'
+                    });
+                }
             }
 
             if (isRest) {
@@ -243,18 +257,22 @@
                 document.querySelectorAll('.rest-btn').forEach((button) => {
                     button.classList.remove('clicked');
                 });
-                mParams.rest = sender.getAttribute('data-rest-val');
 
+                mParams.type = 'rest';
+                mParams.rest = sender.getAttribute('data-rest-val');
+                mParams.duration = sender.getAttribute('data-dur-val');
+
+                if (mParams.ghostNote.symbol) {
+                    mParams.ghostNote.symbol.remove();
+                }
+                if (mParams.ghostNote.symbolR) {
+                    mParams.ghostNote.symbolR.remove();
+                }
                 mParams.ghostNote.symbol = paper.path(symbols[mParams.rest]);
-                mParams.ghostNote.symbolR = paper.path(symbols[mParams.rest]); // TODO: fix this also calculate ghost rest pos
                 mParams.ghostNote.symbol.attr({
                     fill: 'transparent'
                 });
-                mParams.ghostNote.symbolR.attr({
-                    fill: 'transparent'
-                });
                 mParams.ghostNote.symbol.addClass('no-print');
-                mParams.ghostNote.symbolR.addClass('no-print');
             }
 
             if (isLoc) {
@@ -292,12 +310,23 @@
             }
             if (isRest) {
                 mParams.rest = null;
+
+                if (mParams.ghostNote.symbol) {
+                    mParams.ghostNote.symbol.remove();
+                }
             }
             if (isDur) {
                 mParams.duration = null;
                 // deactivate dot
                 mParams.dot = false;
                 document.querySelector('.dot-btn').classList.remove('clicked');
+
+                if (mParams.ghostNote.symbol) {
+                    mParams.ghostNote.symbol.remove();
+                }
+                if (mParams.ghostNote.symbolR) {
+                    mParams.ghostNote.symbolR.remove();
+                }
             }
             if (isDot) {
                 mParams.dot = false;
@@ -305,6 +334,7 @@
             if (isLoc) {
                 mParams.loc = null;
             }
+
             sender.classList.remove('clicked');
         }
     }
@@ -486,18 +516,19 @@
         dvGroupRests.className = 'btn-group';
 
         let restParams = [
-            {val: 'r1', img: 'rest1.svg'},
-            {val: 'r2', img: 'rest2.svg'},
-            {val: 'r4', img: 'rest4.svg'},
-            {val: 'r8', img: 'rest8.svg'},
-            {val: 'r16', img: 'rest16.svg'},
-            {val: 'r32', img: 'rest32.svg'}
+            {val: 'r1', dur: "1/1", img: 'rest1.svg'},
+            {val: 'r2', dur: "1/2", img: 'rest2.svg'},
+            {val: 'r4', dur: "1/4", img: 'rest4.svg'},
+            {val: 'r8', dur: "1/8", img: 'rest8.svg'},
+            {val: 'r16', dur: "1/16", img: 'rest16.svg'},
+            {val: 'r32', dur: "1/32", img: 'rest32.svg'}
         ];
 
         for (let rest of restParams) {
             let btn = document.createElement('div');
             btn.className = 'tmm-menu-btn rest-btn';
             btn.setAttribute('data-rest-val', rest.val);
+            btn.setAttribute('data-dur-val', rest.dur);
             btn.innerHTML = '<img alt="' + rest.val + '" src="static/img/' + rest.img + '">';
             dvGroupRests.appendChild(btn);
         }
@@ -536,8 +567,6 @@
                 tmmMenuButtonClick(e, paper);
             });
         }
-
-        document.querySelector('[data-dur-val="n4"]').click();
     }
 
     function Note(pitch, duration) {
@@ -796,6 +825,7 @@
         this.widthDiff = 0;
         this.startPos = 0;
         this.endPos = 0;
+        this.porteTop = 0;
         this.paperNotes = [];
         this.globalAccidentals = null;
         this.guideGroup = null;
@@ -807,6 +837,7 @@
             left: 0
         };
         this.ghostColor = null;
+        this.ghostLineColor = null;
         this.ghostsVisible = false;
         this.porteLiHe = 10;
         this.allYPos = [];
@@ -827,7 +858,7 @@
         this.getRequiredWidth = function (sParams) {
             if (this.reqWidth === 0) {
                 if (this.notes.length === 0) {
-                    this.reqWidth = sParams.cfg.porteLineHeight * 1.5 * 10;
+                    this.reqWidth = sParams.cfg.porteLineHeight * 1.5 * sParams.cfg.emptyMeasureLen;
                 } else {
                     this.reqWidth = this.drawMeasure(sParams, true);
                 }
@@ -863,7 +894,7 @@
         this.drawMeasure = function (sParams, forReqWidth) {
             this.startPos = sParams.startLeft;
             let paper = sParams.paper;
-            let top = sParams.startTop;
+            this.porteTop = sParams.startTop;
             this.porteLiHe = sParams.cfg.porteLineHeight;
             let rw = this.widthDiff / (this.notes.length + 1);
             if (forReqWidth) {
@@ -883,13 +914,13 @@
 
             for (let note of this.notes) {
                 let acci = this.getReqAccidental(note, accidentals);
-                let noteG = note.drawNote(paper, this.porteLiHe, lThickness, left, top, color, lColor, acci);
+                let noteG = note.drawNote(paper, this.porteLiHe, lThickness, left, this.porteTop, color, lColor, acci);
                 left += noteG.getBBox().width + this.porteLiHe * 1.5 + rw;
                 this.paperNotes.push(noteG);
             }
 
             if (this.notes.length === 0) {
-                left += this.porteLiHe * 1.5 * 9;
+                left += this.porteLiHe * 1.5 * (sParams.cfg.emptyMeasureLen - 1);
             }
 
             if (Math.abs(sParams.endPos - left) <= 1 || (left > sParams.endPos)) {
@@ -898,15 +929,16 @@
 
             this.endPos = left;
             let x1 = left;
-            let y1 = top;
-            let y2 = top + this.porteLiHe * 4;
+            let y1 = this.porteTop;
+            let y2 = this.porteTop + this.porteLiHe * 4;
             if (!forReqWidth) {
                 this.ghostColor = sParams.cfg.ghostColor;
+                this.ghostLineColor = sParams.cfg.ghostLineColor;
                 let eps = this.porteLiHe / 5;
 
-                this.box.top = top - this.porteLiHe * 5;
+                this.box.top = this.porteTop - this.porteLiHe * 5;
                 this.box.right = this.endPos - eps;
-                this.box.bottom = top + this.porteLiHe * 9;
+                this.box.bottom = this.porteTop + this.porteLiHe * 9;
                 this.box.left = this.startPos + eps;
 
                 let mLine = paper.line(x1, y1, x1, y2);
@@ -919,11 +951,11 @@
                 let y;
                 this.guideGroup = paper.g();
                 for (let i = 1; i <= 5; i++) {
-                    y = top - i * this.porteLiHe;
+                    y = this.porteTop - i * this.porteLiHe;
                     let upperLine = paper.line(this.box.left, y, this.box.right, y);
                     this.guideGroup.add(upperLine);
 
-                    y = top + (i + 4) * this.porteLiHe;
+                    y = this.porteTop + (i + 4) * this.porteLiHe;
                     let lowerLine = paper.line(this.box.left, y, this.box.right, y);
                     this.guideGroup.add(lowerLine);
                 }
@@ -941,7 +973,7 @@
 
                 // set y coords
                 for (let i = -10; i <= 18; i++) {
-                    this.allYPos.push(top + (this.porteLiHe / 2) * i);
+                    this.allYPos.push(this.porteTop + (this.porteLiHe / 2) * i);
                 }
             } else {
                 for (let i = 0; i < this.paperNotes.length; i++) {
@@ -955,56 +987,136 @@
         };
 
         this.mouseOver = function (x, y) {
+            let scaleFactor, translateStr, scaleStr;
             if ((x >= this.box.left) && (x <= this.box.right) && (y >= this.box.top) && (y <= this.box.bottom)) {
-                if (!this.ghostsVisible) {
-                    this.guideGroup.attr({
-                        stroke: this.ghostColor
-                    });
-                }
-                if (y >= (this.allYPos[14] + this.porteLiHe / 4)) {
-                    mParams.ghostNote.symbol.attr({
-                        fill: this.ghostColor
-                    });
-                    mParams.ghostNote.symbolR.attr({
-                        fill: 'transparent'
-                    });
-                } else {
-                    mParams.ghostNote.symbol.attr({
-                        fill: 'transparent'
-                    });
-                    mParams.ghostNote.symbolR.attr({
-                        fill: this.ghostColor
-                    });
-                }
-                let snapPos = this.allYPos[0];
-                let min = this.porteLiHe * 100;
-                for (let yPos of this.allYPos) {
-                    let diff = Math.abs(y - yPos);
-                    if (diff < min) {
-                        snapPos = yPos;
-                        min = diff;
-                    }
+                switch (mParams.type) {
+                    case 'note':
+                        if (mParams.duration) {
+                            if (!this.ghostsVisible) {
+                                this.guideGroup.attr({
+                                    stroke: this.ghostLineColor
+                                });
+                            }
+                            if (y >= (this.allYPos[14] + this.porteLiHe / 4)) {
+                                mParams.ghostNote.symbol.attr({
+                                    fill: this.ghostColor
+                                });
+                                mParams.ghostNote.symbolR.attr({
+                                    fill: 'transparent'
+                                });
+                            } else {
+                                mParams.ghostNote.symbol.attr({
+                                    fill: 'transparent'
+                                });
+                                mParams.ghostNote.symbolR.attr({
+                                    fill: this.ghostColor
+                                });
+                            }
+
+                            let snapPos = this.allYPos[0];
+                            let min = this.porteLiHe * 100;
+                            for (let yPos of this.allYPos) {
+                                let diff = Math.abs(y - yPos);
+                                if (diff < min) {
+                                    snapPos = yPos;
+                                    min = diff;
+                                }
+                            }
+
+                            this.ghostsVisible = true;
+                            scaleFactor = this.porteLiHe / 5;
+                            translateStr = 't ' + (x - this.porteLiHe / 2) + ' ' + snapPos;
+                            scaleStr = 's' + scaleFactor + ' 0 0';
+                            mParams.ghostNote.symbol.transform(translateStr + ' ' + scaleStr);
+                            mParams.ghostNote.symbolR.transform(translateStr + ' ' + scaleStr);
+                            if (mParams.dot) {
+                                mParams.ghostNote.symbolDot.attr({
+                                    fill: this.ghostColor,
+                                    cx: (x - this.porteLiHe / 2) + this.porteLiHe * 3.5 / 2,
+                                    cy: snapPos,
+                                    r: this.porteLiHe / 5
+                                });
+                            }
+                        }
+                        break;
+                    case 'rest':
+                        if (mParams.rest) {
+                            scaleFactor = this.porteLiHe / 5;
+                            scaleStr = 's' + scaleFactor + ' 0 0';
+                            let height = mParams.ghostNote.symbol.getBBox().height;
+                            let tTop;
+                            switch (mParams.duration) {
+                                case "1/32":
+                                    tTop = this.porteTop + this.porteLiHe * 4 - height;
+                                    break;
+                                case "1/16":
+                                    tTop = this.porteTop + this.porteLiHe * 4 - height;
+                                    break;
+                                case "1/8":
+                                    tTop = this.porteTop + this.porteLiHe * 3 - height;
+                                    break;
+                                case "1/4":
+                                    tTop = this.porteTop + (this.porteLiHe * 4 - height) / 2;
+                                    break;
+                                case "1/2":
+                                    tTop = this.porteTop + this.porteLiHe * 2 - height;
+                                    break;
+                                case "1/1":
+                                    tTop = this.porteTop + this.porteLiHe;
+                                    break;
+                                default:
+                                    tTop = this.porteTop + (this.porteLiHe * 4 - height) / 2;
+                                    break;
+                            }
+                            translateStr = 't ' + (x - this.porteLiHe / 2) + ' ' + tTop;
+                            mParams.ghostNote.symbol.transform(translateStr + ' ' + scaleStr);
+
+                            mParams.ghostNote.symbol.attr({
+                                fill: this.ghostColor
+                            });
+                            this.ghostsVisible = true;
+                        }
+                        break;
+                    default:
+                        break;
                 }
 
-                this.ghostsVisible = true;
-                let scaleFactor = this.porteLiHe / 5;
-                let translateStr = 't ' + (x - this.porteLiHe / 2) + ' ' + snapPos;
-                let scaleStr = 's' + scaleFactor + ' 0 0';
-                mParams.ghostNote.symbol.transform(translateStr + ' ' + scaleStr);
-                mParams.ghostNote.symbolR.transform(translateStr + ' ' + scaleStr);
+
             } else {
-                if (this.ghostsVisible) {
-                    this.guideGroup.attr({
-                        stroke: 'transparent'
-                    });
-                    mParams.ghostNote.symbol.attr({
-                        fill: 'transparent'
-                    });
-                    mParams.ghostNote.symbolR.attr({
-                        fill: 'transparent'
-                    });
+                switch (mParams.type) {
+                    case 'note':
+                        if (this.ghostsVisible) {
+                            this.guideGroup.attr({
+                                stroke: 'transparent'
+                            });
+                            mParams.ghostNote.symbol.attr({
+                                fill: 'transparent'
+                            });
+                            mParams.ghostNote.symbolR.attr({
+                                fill: 'transparent'
+                            });
+                            if (mParams.dot) {
+                                mParams.ghostNote.symbolDot.attr({
+                                    fill: 'transparent',
+                                    cx: -1,
+                                    cy: -1
+                                });
+                            }
+                        }
+                        this.ghostsVisible = false;
+                        break;
+                    case 'rest':
+                        if (this.ghostsVisible) {
+                            mParams.ghostNote.symbol.attr({
+                                fill: 'transparent'
+                            });
+                        }
+                        this.ghostsVisible = false;
+                        break;
+                    default:
+                        break;
                 }
-                this.ghostsVisible = false;
+
             }
         };
     }
@@ -1250,9 +1362,11 @@
             mainColor: "#565345",
             porteLineColor: "#BDA37E",
             paperBgColor: "#F7F5EA",
-            ghostColor: "#B2ABA9",
+            ghostColor: "#998166",
+            ghostLineColor: "#E5DCD0",
             defMeasureCount: 4,
-            maxPaperWidth: 1100
+            maxPaperWidth: 1100,
+            emptyMeasureLen: 10
         };
         // prep work
         let windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
@@ -1364,6 +1478,7 @@
                 }
             }, false);
 
+            document.querySelector('[data-dur-val="n4"]').click();
         };
     }
 
