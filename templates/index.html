@@ -222,7 +222,7 @@
             }
 
             if (isDot) {
-                if (!mParams.duration) {
+                if (!mParams.duration || mParams.rest) {
                     return;
                 }
                 mParams.dot = true;
@@ -1045,7 +1045,7 @@
                             scaleStr = 's' + scaleFactor + ' 0 0';
                             let height = mParams.ghostNote.symbol.getBBox().height;
                             let tTop;
-                            switch (mParams.duration) {
+                            switch (mParams.rest) {
                                 case "1/32":
                                     tTop = this.porteTop + this.porteLiHe * 4 - height;
                                     break;
