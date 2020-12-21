@@ -700,32 +700,33 @@
             let portePos = 0;
             let noteG = paper.g();
             let path = this.getPathStr(this.durStr);
+            let absLeft = Math.round(left * 100) / 100,
+                relLeft = 0;
             if (!this.isRest) {
                 portePos = notePositions[this.getNote()];
-                let noteBodyTop = top + porteLiHe * portePos;
-                left = Math.round(left * 100) / 100;
-                noteBodyTop = Math.round(noteBodyTop * 100) / 100;
+                let absTop = top + (porteLiHe * portePos);
+                absTop = Math.round(absTop * 100) / 100;
                 let accSymbol = null;
                 let stepLines = [];
 
                 if (acci) {
                     let accPath = symbols[acci];
                     accSymbol = paper.path(accPath);
-                    let scaleFactor = parseFloat((porteLiHe / 3.25).toFixed(2));
-                    accSymbol.transform('t ' + left + ' ' + noteBodyTop + ' ' + 's' + scaleFactor + ' 0 0');
+                    let scaleFactor = parseFloat((porteLiHe / 2.75).toFixed(2));
+                    accSymbol.transform('t ' + relLeft + ' ' + 0 + ' ' + 's' + scaleFactor + ' 0 0');
                     accSymbol.attr({
                         fill: color
                     });
 
-                    left += accSymbol.getBBox().width + (porteLiHe / 2);
+                    relLeft += accSymbol.getBBox().width + (porteLiHe / 4);
                 }
 
                 if (portePos <= -1) {
                     // higher than A5
                     let stepCount = Math.floor(Math.abs(portePos));
-                    for (let i = 1; i <= stepCount; i++) {
-                        let lineTop = top - i * porteLiHe;
-                        let stepLine = paper.line(left - porteLiHe / 2, lineTop, left + porteLiHe * 3.5 / 2, lineTop);
+                    for (let i = 0; i < stepCount; i++) {
+                        let lineTop = (i - (portePos % 1)) * porteLiHe;
+                        let stepLine = paper.line(relLeft - porteLiHe / 2, lineTop, relLeft + porteLiHe * 3.5 / 2, lineTop);
                         stepLine.attr({
                             stroke: lColor,
                             strokeWidth: lThickness
@@ -736,9 +737,9 @@
                 if (portePos >= 5) {
                     // lower than C4
                     let stepCount = Math.floor(portePos - 4);
-                    for (let i = 1; i <= stepCount; i++) {
-                        let lineTop = top + (i + 4) * porteLiHe;
-                        let stepLine = paper.line(left - porteLiHe / 2, lineTop, left + porteLiHe * 3.5 / 2, lineTop);
+                    for (let i = 0; i < stepCount; i++) {
+                        let lineTop = (-i - (portePos % 1)) * porteLiHe;
+                        let stepLine = paper.line(relLeft - porteLiHe / 2, lineTop, relLeft + porteLiHe * 3.5 / 2, lineTop);
                         stepLine.attr({
                             stroke: lColor,
                             strokeWidth: lThickness
@@ -748,7 +749,7 @@
                 }
 
                 let noteBody = paper.path(path);
-                let translateStr = 't ' + left + ' ' + noteBodyTop;
+                let translateStr = 't ' + relLeft + ' ' + 0;
                 let scaleFactor = porteLiHe / 5;
                 let scaleStr = 's' + scaleFactor + ' 0 0';
 
@@ -768,12 +769,14 @@
                 noteG.add(noteBody);
 
                 if (this.isDotted) {
-                    let dot = paper.circle((left + porteLiHe * 3.5 / 2), noteBodyTop, (porteLiHe / 5));
+                    let dot = paper.circle((relLeft + porteLiHe * 3.5 / 2), 0, (porteLiHe / 5));
                     dot.attr({
                         fill: color
                     });
                     noteG.add(dot);
                 }
+                translateStr = 't ' + absLeft + ' ' + absTop;
+                noteG.transform(translateStr);
             } else {
                 let restBody = paper.path(path);
 
@@ -807,12 +810,13 @@
 
                 let translateStr = 't ' + left + ' ' + tTop;
 
-                restBody.transform(translateStr + ' ' + scaleStr);
+                restBody.transform(scaleStr);
                 restBody.attr({
                     fill: color
                 });
 
                 noteG.add(restBody);
+                noteG.transform(translateStr);
             }
             return noteG;
 
@@ -1119,6 +1123,21 @@
 
             }
         };
+
+        this.mouseClick = function (x, y) {
+            if ((x >= this.box.left) && (x <= this.box.right) && (y >= this.box.top) && (y <= this.box.bottom)) {
+                switch (mParams.type) {
+                    case 'note':
+                        console.log('adding note');
+                        break;
+                    case 'rest':
+                        console.log('adding rest');
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
     }
 
     function SatirObject(paper, configs, left, top, width, accidentals, timeSig) {
@@ -1336,6 +1355,12 @@
             }
         };
 
+        this.handleClick = function (x, y) {
+            for (let measure of this.measures) {
+                measure.mouseClick(x, y);
+            }
+        };
+
         this.init = function () {
             this.drawLines();
             leftUsablePos = this.drawClef();
@@ -1478,6 +1503,18 @@
                 }
             }, false);
 
+            svgElem.addEventListener('click', function (evt) {
+                pt.x = evt.clientX;
+                pt.y = evt.clientY;
+                let loc = pt.matrixTransform(svgElem.getScreenCTM().inverse());
+                let x = Math.max(Math.round(loc.x), 0);
+                let y = Math.max(Math.round(loc.y), 0);
+
+                for (let satir of satirlar) {
+                    satir.handleClick(x, y);
+                }
+            }, false);
+
             document.querySelector('[data-dur-val="n4"]').click();
         };
     }
@@ -1497,15 +1534,23 @@
         measure.addNote('Rest', '1/4');
         measure.addNote('Rest', '1/2');
         measure.addNote('Rest', '1/1');
+
         measure.addNote('Do6#4', '1/16');
-        measure.addNote('La4', '1/4');
+        measure.addNote('Re6', '1/16');
+        measure.addNote('Mi6', '1/16');
+        measure.addNote('Sol5', '1/16');
+        measure.addNote('La5b5', '3/8');
+        measure.addNote('Si5b5', '3/8');
 
         tmmScore.addMeasure(measure);
 
         measure = new Measure();
-        measure.addNote('Fa5', '1/2');
-        measure.addNote('Mi5', '1/4');
-        measure.addNote('Re5', '1/8');
+        measure.addNote('Do3#4', '1/4');
+        measure.addNote('Re3#1', '1/32');
+        measure.addNote('Mi3#8', '3/8');
+        measure.addNote('Fa5b8', '1/2');
+        measure.addNote('Mi5b5', '1/4');
+        measure.addNote('Re5b4', '1/8');
         measure.addNote('Do5#4', '1/16');
 
         tmmScore.addMeasure(measure);
