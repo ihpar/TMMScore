@@ -25,6 +25,7 @@
     "use strict";
 
     const notePositions = {
+        b2: 9,
         c3: 8.5,
         d3: 8,
         e3: 7.5,
@@ -53,7 +54,7 @@
         g6: -4,
         a6: -4.5,
         b6: -5,
-        c7: -5.5,
+        si2: 9,
         do3: 8.5,
         re3: 8,
         mi3: 7.5,
@@ -81,8 +82,39 @@
         fa6: -3.5,
         sol6: -4,
         la6: -4.5,
-        si6: -5,
-        do7: -5.5
+        si6: -5
+    };
+
+    const notePositionsRev = {
+        "9": "si2",
+        "8.5": "do3",
+        "8": "re3",
+        "7.5": "mi3",
+        "7": "fa3",
+        "6.5": "sol3",
+        "6": "la3",
+        "5.5": "si3",
+        "5": "do4",
+        "4.5": "re4",
+        "4": "mi4",
+        "3.5": "fa4",
+        "3": "sol4",
+        "2.5": "la4",
+        "2": "si4",
+        "1.5": "do5",
+        "1": "re5",
+        "0.5": "mi5",
+        "0": "fa5",
+        "-0.5": "sol5",
+        "-1": "la5",
+        "-1.5": "si5",
+        "-2": "do6",
+        "-2.5": "re6",
+        "-3": "mi6",
+        "-3.5": "fa6",
+        "-4": "sol6",
+        "-4.5": "la6",
+        "-5": "si6"
     };
 
     const noteNameDict = {
@@ -602,14 +634,6 @@
             this.noteRoot = "rest";
         }
 
-        this.toStr = function () {
-            if (this.noteComma) {
-                return [this.noteRoot, this.noteOctave, this.noteComma, this.durNum, this.durDen].join(':');
-            } else {
-                return [this.noteRoot, this.noteOctave, this.durNum, this.durDen].join(':');
-            }
-        };
-
         this.getNote = function () {
             if (this.isRest) {
                 return this.noteRoot;
@@ -845,6 +869,8 @@
         this.ghostsVisible = false;
         this.porteLiHe = 10;
         this.allYPos = [];
+        this.noteLefts = [];
+        this.sParams = null;
 
         this.addNote = function (pitch, dur) {
             let note = new Note(pitch, dur);
@@ -853,10 +879,6 @@
 
         this.getNotes = function () {
             return this.notes;
-        };
-
-        this.toStr = function () {
-            return "";
         };
 
         this.getRequiredWidth = function (sParams) {
@@ -896,39 +918,46 @@
         };
 
         this.drawMeasure = function (sParams, forReqWidth) {
-            this.startPos = sParams.startLeft;
-            let paper = sParams.paper;
-            this.porteTop = sParams.startTop;
-            this.porteLiHe = sParams.cfg.porteLineHeight;
+            if (!forReqWidth || !this.sParams) {
+                this.sParams = Object.assign({}, sParams);
+            }
+
+            this.startPos = this.sParams.startLeft;
+            let paper = this.sParams.paper;
+            this.porteTop = this.sParams.startTop;
+            this.porteLiHe = this.sParams.cfg.porteLineHeight;
             let rw = this.widthDiff / (this.notes.length + 1);
             if (forReqWidth) {
                 rw = 0;
             }
-            let left = sParams.startLeft + this.porteLiHe * 1.5 + rw;
-            let color = sParams.cfg.noteColor;
-            let lThickness = sParams.cfg.lineThickness;
-            let lColor = sParams.cfg.porteLineColor;
+            let left = this.sParams.startLeft + this.porteLiHe * 1.5 + rw;
+            let color = this.sParams.cfg.noteColor;
+            let lThickness = this.sParams.cfg.lineThickness;
+            let lColor = this.sParams.cfg.porteLineColor;
 
             if (forReqWidth) {
                 color = 'transparent';
                 lColor = 'transparent';
             }
 
-            let accidentals = JSON.parse(JSON.stringify(sParams.accidentals));
+            let accidentals = JSON.parse(JSON.stringify(this.sParams.accidentals));
 
             for (let note of this.notes) {
                 let acci = this.getReqAccidental(note, accidentals);
                 let noteG = note.drawNote(paper, this.porteLiHe, lThickness, left, this.porteTop, color, lColor, acci);
+                if (!forReqWidth) {
+                    this.noteLefts.push(left);
+                }
                 left += noteG.getBBox().width + this.porteLiHe * 1.5 + rw;
                 this.paperNotes.push(noteG);
             }
 
             if (this.notes.length === 0) {
-                left += this.porteLiHe * 1.5 * (sParams.cfg.emptyMeasureLen - 1);
+                left += this.porteLiHe * 1.5 * (this.sParams.cfg.emptyMeasureLen - 1);
             }
 
-            if (Math.abs(sParams.endPos - left) <= 1 || (left > sParams.endPos)) {
-                left = sParams.endPos;
+            if (Math.abs(this.sParams.endPos - left) <= 1 || (left > this.sParams.endPos)) {
+                left = this.sParams.endPos;
             }
 
             this.endPos = left;
@@ -936,8 +965,8 @@
             let y1 = this.porteTop;
             let y2 = this.porteTop + this.porteLiHe * 4;
             if (!forReqWidth) {
-                this.ghostColor = sParams.cfg.ghostColor;
-                this.ghostLineColor = sParams.cfg.ghostLineColor;
+                this.ghostColor = this.sParams.cfg.ghostColor;
+                this.ghostLineColor = this.sParams.cfg.ghostLineColor;
                 let eps = this.porteLiHe / 5;
 
                 this.box.top = this.porteTop - this.porteLiHe * 5;
@@ -947,8 +976,8 @@
 
                 let mLine = paper.line(x1, y1, x1, y2);
                 mLine.attr({
-                    stroke: sParams.cfg.porteLineColor,
-                    strokeWidth: sParams.cfg.lineThickness
+                    stroke: this.sParams.cfg.porteLineColor,
+                    strokeWidth: this.sParams.cfg.lineThickness
                 });
 
                 // draw upper lower lines
@@ -965,7 +994,7 @@
                 }
                 this.guideGroup.attr({
                     stroke: 'transparent',
-                    strokeWidth: sParams.cfg.lineThickness
+                    strokeWidth: this.sParams.cfg.lineThickness
                 });
 
                 this.guideGroup.addClass('no-print');
@@ -1047,9 +1076,9 @@
                         if (mParams.rest) {
                             scaleFactor = this.porteLiHe / 5;
                             scaleStr = 's' + scaleFactor + ' 0 0';
-                            let height = mParams.ghostNote.symbol.getBBox().height;
+                            let height = Math.round(mParams.ghostNote.symbol.getBBox().height * 100) / 100;
                             let tTop;
-                            switch (mParams.rest) {
+                            switch (mParams.duration) {
                                 case "1/32":
                                     tTop = this.porteTop + this.porteLiHe * 4 - height;
                                     break;
@@ -1063,7 +1092,7 @@
                                     tTop = this.porteTop + (this.porteLiHe * 4 - height) / 2;
                                     break;
                                 case "1/2":
-                                    tTop = this.porteTop + this.porteLiHe * 2 - height;
+                                    tTop = this.porteTop + (this.porteLiHe * 2) - height;
                                     break;
                                 case "1/1":
                                     tTop = this.porteTop + this.porteLiHe;
@@ -1128,15 +1157,50 @@
             if ((x >= this.box.left) && (x <= this.box.right) && (y >= this.box.top) && (y <= this.box.bottom)) {
                 switch (mParams.type) {
                     case 'note':
-                        console.log('adding note');
+                        let snapPos = this.allYPos[0];
+                        let min = this.porteLiHe * 100;
+                        for (let i = 0; i < this.allYPos.length; i++) {
+                            let diff = Math.abs(y - this.allYPos[i]);
+                            if (diff < min) {
+                                snapPos = i;
+                                min = diff;
+                            }
+                        }
+                        snapPos = (snapPos - 10) / 2;
+                        let noteRoot = notePositionsRev[snapPos + ''];
+                        let noteAcci = mParams.acci ? mParams.acci : '';
+                        let fullPitch = noteRoot + noteAcci;
+                        let isDotted = mParams.dot;
+                        let durDen = parseInt(mParams.duration.replace('n', ''));
+                        let durNum = isDotted ? 3 : 1;
+                        durDen = isDotted ? durDen * 2 : durDen;
+                        let fullDur = durNum + '/' + durDen;
+                        let i = 0;
+                        for (let nl of this.noteLefts) {
+                            if (nl < x) {
+                                i++;
+                            } else {
+                                break;
+                            }
+                        }
+                        console.log(i);
+                        let note = new Note(fullPitch, fullDur);
+                        this.notes.splice(i, 0, note);
+                        this.drawMeasure(this.sParams, false);
                         break;
                     case 'rest':
-                        console.log('adding rest');
+                        let restBody = 'Rest';
+                        let restDur = mParams.duration;
+                        console.log(restBody, restDur);
                         break;
                     default:
                         break;
                 }
             }
+        };
+
+        this.insertAfter = function (idx, el) {
+            this.notes.splice(idx, 0, el);
         };
     }
 
