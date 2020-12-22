@@ -872,6 +872,7 @@
         this.noteLefts = [];
         this.sParams = null;
         this.mAccidentals = null;
+        this.mLine = null;
 
         this.addNote = function (pitch, dur) {
             let note = new Note(pitch, dur);
@@ -903,6 +904,8 @@
             this.startPos = this.sParams.startLeft;
             this.porteTop = this.sParams.startTop;
             this.porteLiHe = this.sParams.cfg.porteLineHeight;
+            this.ghostColor = this.sParams.cfg.ghostColor;
+            this.ghostLineColor = this.sParams.cfg.ghostLineColor;
         };
 
         this.getReqAccidental = function (note, accidentals) {
@@ -926,7 +929,50 @@
             return noteAcc;
         };
 
-        this.drawMeasure = function (forReqWidth) {
+        this.getReqAccidentalAtPos = function (noteRoot, forcedAcci, pos) {
+            let accidentals = JSON.parse(JSON.stringify(this.mAccidentals));
+            let acci;
+            for (let i = 0; i < pos; i++) {
+                let eNote = this.notes[i];
+                acci = this.getReqAccidental(eNote, accidentals);
+            }
+            let notePitch = noteRoot.slice(0, -1);
+            if (notePitch in accidentals) {
+                if (!forcedAcci) {
+                    return accidentals[notePitch];
+                } else {
+                    if (forcedAcci === 'n') {
+                        forcedAcci = '';
+                    }
+                    return forcedAcci;
+                }
+            } else {
+                if (forcedAcci === 'n') {
+                    forcedAcci = '';
+                }
+                return forcedAcci;
+            }
+        };
+
+        this.drawMeasure = function (forReqWidth, refresh) {
+            if (refresh) {
+                for (let pNote of this.paperNotes) {
+                    pNote.remove();
+                }
+                this.paperNotes = [];
+                this.noteLefts = [];
+
+                this.mLine.remove();
+                this.mLine = null;
+
+                this.guideGroup.remove();
+                this.guideGroup = null;
+
+                this.notesGroup.remove();
+                this.notesGroup = null;
+
+                this.allYPos = [];
+            }
             let rw = this.widthDiff / (this.notes.length + 1);
             if (forReqWidth) {
                 rw = 0;
@@ -966,8 +1012,6 @@
             let y1 = this.porteTop;
             let y2 = this.porteTop + this.porteLiHe * 4;
             if (!forReqWidth) {
-                this.ghostColor = this.sParams.cfg.ghostColor;
-                this.ghostLineColor = this.sParams.cfg.ghostLineColor;
                 let eps = this.porteLiHe / 5;
 
                 this.box.top = this.porteTop - this.porteLiHe * 5;
@@ -975,8 +1019,8 @@
                 this.box.bottom = this.porteTop + this.porteLiHe * 9;
                 this.box.left = this.startPos + eps;
 
-                let mLine = this.sParams.paper.line(x1, y1, x1, y2);
-                mLine.attr({
+                this.mLine = this.sParams.paper.line(x1, y1, x1, y2);
+                this.mLine.attr({
                     stroke: this.sParams.cfg.porteLineColor,
                     strokeWidth: this.sParams.cfg.lineThickness
                 });
@@ -1171,8 +1215,6 @@
                         snapPos = (snapPos - 10) / 2;
                         let noteRoot = notePositionsRev[snapPos + ''];
                         let noteAcci = mParams.acci ? mParams.acci : '';
-                        console.log(noteRoot, noteAcci);
-                        let fullPitch = noteRoot + noteAcci;
                         let isDotted = mParams.dot;
                         let durDen = parseInt(mParams.duration.replace('n', ''));
                         let durNum = isDotted ? 3 : 1;
@@ -1186,9 +1228,12 @@
                                 break;
                             }
                         }
+                        let cAcci = this.getReqAccidentalAtPos(noteRoot, noteAcci, i);
+                        cAcci = cAcci.replace('d', '#');
+                        let fullPitch = noteRoot + cAcci;
                         note = new Note(fullPitch, fullDur);
                         this.notes.splice(i, 0, note);
-                        this.drawMeasure(false);
+                        this.drawMeasure(false, true);
                         break;
                     case 'rest':
                         let restBody = 'Rest';
@@ -1203,16 +1248,12 @@
                         }
                         note = new Note(restBody, restDur);
                         this.notes.splice(i, 0, note);
-                        this.drawMeasure(false);
+                        this.drawMeasure(false, true);
                         break;
                     default:
                         break;
                 }
             }
-        };
-
-        this.insertAfter = function (idx, el) {
-            this.notes.splice(idx, 0, el);
         };
     }
 
@@ -1603,9 +1644,11 @@
         tmmScore.setAccidentals(['B4b4', 'F5#4', 'C5#4']);
         tmmScore.setMeter('9/8');
 
-        /*
         let measure = new Measure();
         measure.addNote('Do5#4', '1/16');
+        measure.addNote('Do5', '1/8');
+        tmmScore.addMeasure(measure);
+        /*
         measure.addNote('Rest', '1/32');
         measure.addNote('Rest', '1/16');
         measure.addNote('Rest', '1/8');
