@@ -871,6 +871,7 @@
         this.allYPos = [];
         this.noteLefts = [];
         this.sParams = null;
+        this.mAccidentals = null;
 
         this.addNote = function (pitch, dur) {
             let note = new Note(pitch, dur);
@@ -881,12 +882,12 @@
             return this.notes;
         };
 
-        this.getRequiredWidth = function (sParams) {
+        this.getRequiredWidth = function () {
             if (this.reqWidth === 0) {
                 if (this.notes.length === 0) {
-                    this.reqWidth = sParams.cfg.porteLineHeight * 1.5 * sParams.cfg.emptyMeasureLen;
+                    this.reqWidth = this.porteLiHe * 1.5 * this.sParams.cfg.emptyMeasureLen;
                 } else {
-                    this.reqWidth = this.drawMeasure(sParams, true);
+                    this.reqWidth = this.drawMeasure(true);
                 }
             }
             return this.reqWidth;
@@ -894,6 +895,14 @@
 
         this.setWidthDiff = function (diff) {
             this.widthDiff = diff;
+        };
+
+        this.setSParams = function (sParams) {
+            this.sParams = Object.assign({}, sParams);
+            this.mAccidentals = JSON.parse(JSON.stringify(this.sParams.accidentals));
+            this.startPos = this.sParams.startLeft;
+            this.porteTop = this.sParams.startTop;
+            this.porteLiHe = this.sParams.cfg.porteLineHeight;
         };
 
         this.getReqAccidental = function (note, accidentals) {
@@ -917,15 +926,7 @@
             return noteAcc;
         };
 
-        this.drawMeasure = function (sParams, forReqWidth) {
-            if (!forReqWidth || !this.sParams) {
-                this.sParams = Object.assign({}, sParams);
-            }
-
-            this.startPos = this.sParams.startLeft;
-            let paper = this.sParams.paper;
-            this.porteTop = this.sParams.startTop;
-            this.porteLiHe = this.sParams.cfg.porteLineHeight;
+        this.drawMeasure = function (forReqWidth) {
             let rw = this.widthDiff / (this.notes.length + 1);
             if (forReqWidth) {
                 rw = 0;
@@ -940,11 +941,11 @@
                 lColor = 'transparent';
             }
 
-            let accidentals = JSON.parse(JSON.stringify(this.sParams.accidentals));
+            let accidentals = JSON.parse(JSON.stringify(this.mAccidentals));
 
             for (let note of this.notes) {
                 let acci = this.getReqAccidental(note, accidentals);
-                let noteG = note.drawNote(paper, this.porteLiHe, lThickness, left, this.porteTop, color, lColor, acci);
+                let noteG = note.drawNote(this.sParams.paper, this.porteLiHe, lThickness, left, this.porteTop, color, lColor, acci);
                 if (!forReqWidth) {
                     this.noteLefts.push(left);
                 }
@@ -974,7 +975,7 @@
                 this.box.bottom = this.porteTop + this.porteLiHe * 9;
                 this.box.left = this.startPos + eps;
 
-                let mLine = paper.line(x1, y1, x1, y2);
+                let mLine = this.sParams.paper.line(x1, y1, x1, y2);
                 mLine.attr({
                     stroke: this.sParams.cfg.porteLineColor,
                     strokeWidth: this.sParams.cfg.lineThickness
@@ -982,14 +983,14 @@
 
                 // draw upper lower lines
                 let y;
-                this.guideGroup = paper.g();
+                this.guideGroup = this.sParams.paper.g();
                 for (let i = 1; i <= 5; i++) {
                     y = this.porteTop - i * this.porteLiHe;
-                    let upperLine = paper.line(this.box.left, y, this.box.right, y);
+                    let upperLine = this.sParams.paper.line(this.box.left, y, this.box.right, y);
                     this.guideGroup.add(upperLine);
 
                     y = this.porteTop + (i + 4) * this.porteLiHe;
-                    let lowerLine = paper.line(this.box.left, y, this.box.right, y);
+                    let lowerLine = this.sParams.paper.line(this.box.left, y, this.box.right, y);
                     this.guideGroup.add(lowerLine);
                 }
                 this.guideGroup.attr({
@@ -999,7 +1000,7 @@
 
                 this.guideGroup.addClass('no-print');
 
-                this.notesGroup = paper.g();
+                this.notesGroup = this.sParams.paper.g();
                 for (let paperNote of this.paperNotes) {
                     this.notesGroup.add(paperNote);
                 }
@@ -1155,6 +1156,7 @@
 
         this.mouseClick = function (x, y) {
             if ((x >= this.box.left) && (x <= this.box.right) && (y >= this.box.top) && (y <= this.box.bottom)) {
+                let i, note;
                 switch (mParams.type) {
                     case 'note':
                         let snapPos = this.allYPos[0];
@@ -1169,13 +1171,14 @@
                         snapPos = (snapPos - 10) / 2;
                         let noteRoot = notePositionsRev[snapPos + ''];
                         let noteAcci = mParams.acci ? mParams.acci : '';
+                        console.log(noteRoot, noteAcci);
                         let fullPitch = noteRoot + noteAcci;
                         let isDotted = mParams.dot;
                         let durDen = parseInt(mParams.duration.replace('n', ''));
                         let durNum = isDotted ? 3 : 1;
                         durDen = isDotted ? durDen * 2 : durDen;
                         let fullDur = durNum + '/' + durDen;
-                        let i = 0;
+                        i = 0;
                         for (let nl of this.noteLefts) {
                             if (nl < x) {
                                 i++;
@@ -1183,15 +1186,24 @@
                                 break;
                             }
                         }
-                        console.log(i);
-                        let note = new Note(fullPitch, fullDur);
+                        note = new Note(fullPitch, fullDur);
                         this.notes.splice(i, 0, note);
-                        this.drawMeasure(this.sParams, false);
+                        this.drawMeasure(false);
                         break;
                     case 'rest':
                         let restBody = 'Rest';
                         let restDur = mParams.duration;
-                        console.log(restBody, restDur);
+                        i = 0;
+                        for (let nl of this.noteLefts) {
+                            if (nl < x) {
+                                i++;
+                            } else {
+                                break;
+                            }
+                        }
+                        note = new Note(restBody, restDur);
+                        this.notes.splice(i, 0, note);
+                        this.drawMeasure(false);
                         break;
                     default:
                         break;
@@ -1246,20 +1258,20 @@
         };
 
         this.acceptsMeasure = function (measure) {
+            let sParams = this.getMWParams();
+            measure.setSParams(sParams);
             if (this.measures.length === 0) {
                 // if this is the first measure always accept
                 return true;
             }
-            let sParams = this.getMWParams();
-            return (this.remainingWidth >= measure.getRequiredWidth(sParams));
+            return (this.remainingWidth >= measure.getRequiredWidth());
         };
 
         this.distributeWidth = function (remWid) {
             let widths = [];
             let total = 0;
-            let sParams = this.getMWParams();
             for (let measure of this.measures) {
-                let w = measure.getRequiredWidth(sParams);
+                let w = measure.getRequiredWidth();
                 widths.push(w);
                 total += w;
             }
@@ -1269,8 +1281,9 @@
         };
 
         this.addMeasure = function (measure) {
-            this.measures.push(measure);
             let sParams = this.getMWParams();
+            measure.setSParams(sParams);
+            this.measures.push(measure);
             this.remainingWidth -= measure.getRequiredWidth(sParams);
         };
 
@@ -1408,7 +1421,8 @@
             };
 
             for (let measure of this.measures) {
-                leftUsablePos = measure.drawMeasure(sParams, false);
+                measure.setSParams(sParams);
+                leftUsablePos = measure.drawMeasure(false);
                 sParams.startLeft = leftUsablePos;
             }
         };
