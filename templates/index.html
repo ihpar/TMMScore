@@ -1177,27 +1177,35 @@
                         }
                         break;
                     case 'loc':
+                        scaleFactor = this.porteLiHe / 4.75;
+                        scaleStr = 's' + scaleFactor + ' 0 0';
+                        let height = mParams.ghostNote.symbol.getBBox().height;
+                        let width = mParams.ghostNote.symbol.getBBox().width;
+                        let tTop = this.porteTop + (this.porteLiHe * 4 - height) / 2;
+
                         switch (mParams.loc) {
                             case 'repL':
+                                translateStr = 't ' + (this.startPos) + ' ' + tTop;
                                 break;
                             case 'repR':
+                                translateStr = 't ' + (this.endPos - width) + ' ' + tTop;
                                 break;
                             case 'volta1':
+                                scaleFactor = this.porteLiHe / 2;
+                                scaleStr = 's' + scaleFactor + ' 0 0';
+                                tTop = this.porteTop - height - 2;
+                                translateStr = 't ' + (this.startPos) + ' ' + tTop;
                                 break;
                             case 'volta2':
                                 break;
                             case 'segno':
                                 break;
                             case 'fin':
+                                translateStr = 't ' + (this.endPos - width) + ' ' + tTop;
                                 break;
                             default:
                                 break;
                         }
-                        scaleFactor = this.porteLiHe / 5;
-                        scaleStr = 's' + scaleFactor + ' 0 0';
-                        let height = Math.round(mParams.ghostNote.symbol.getBBox().height * 100) / 100;
-                        let tTop = this.porteTop + (this.porteLiHe * 4 - height) / 2;
-                        translateStr = 't ' + (x - (mParams.ghostNote.symbol.getBBox().width / 2)) + ' ' + tTop;
 
                         mParams.ghostNote.symbol.transform(translateStr + ' ' + scaleStr);
                         mParams.ghostNote.symbol.attr({
