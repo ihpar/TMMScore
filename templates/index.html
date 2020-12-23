@@ -192,6 +192,28 @@
         type: null
     };
 
+    function makamMenuItemClick(e) {
+        let sender = e.currentTarget;
+        let selectedMakam = sender.innerHTML;
+        let accidentals = JSON.parse(sender.getAttribute('data-accidentals'));
+        document.getElementById('selectedMakamName').innerHTML = selectedMakam;
+        sender.parentNode.parentNode.blur();
+        mParams.makam.name = selectedMakam;
+        mParams.makam.accidentals = accidentals.slice();
+    }
+
+    function usulMenuItemClick(e) {
+        let sender = e.currentTarget;
+        let meter = JSON.parse(sender.getAttribute('data-meter'));
+        let usul = JSON.parse(sender.getAttribute('data-usul'));
+        document.getElementById('selectedUsulNum').innerHTML = meter[0];
+        document.getElementById('selectedUsulDen').innerHTML = meter[1];
+        document.getElementById('selectedUsulName').innerHTML = usul;
+        sender.parentNode.parentNode.blur();
+        mParams.usul.name = usul;
+        mParams.usul.meter = meter.slice();
+    }
+
     function tmmMenuButtonClick(e, paper) {
         let sender = e.currentTarget;
 
@@ -391,32 +413,14 @@
             }
             if (isLoc) {
                 mParams.loc = null;
+
+                if (mParams.ghostNote.symbol) {
+                    mParams.ghostNote.symbol.remove();
+                }
             }
 
             sender.classList.remove('clicked');
         }
-    }
-
-    function makamMenuItemClick(e) {
-        let sender = e.currentTarget;
-        let selectedMakam = sender.innerHTML;
-        let accidentals = JSON.parse(sender.getAttribute('data-accidentals'));
-        document.getElementById('selectedMakamName').innerHTML = selectedMakam;
-        sender.parentNode.parentNode.blur();
-        mParams.makam.name = selectedMakam;
-        mParams.makam.accidentals = accidentals.slice();
-    }
-
-    function usulMenuItemClick(e) {
-        let sender = e.currentTarget;
-        let meter = JSON.parse(sender.getAttribute('data-meter'));
-        let usul = JSON.parse(sender.getAttribute('data-usul'));
-        document.getElementById('selectedUsulNum').innerHTML = meter[0];
-        document.getElementById('selectedUsulDen').innerHTML = meter[1];
-        document.getElementById('selectedUsulName').innerHTML = usul;
-        sender.parentNode.parentNode.blur();
-        mParams.usul.name = usul;
-        mParams.usul.meter = meter.slice();
     }
 
     function createTMMMenu(containerSelector, paper) {
@@ -597,8 +601,8 @@
         let locParams = [
             {val: 'repL', img: 'repLeft.svg'},
             {val: 'repR', img: 'repRight.svg'},
-            {val: 'volta1', img: 'volta1.svg'},
-            {val: 'volta2', img: 'volta2.svg'},
+            {val: 'volta1', img: 'rep1.svg'},
+            {val: 'volta2', img: 'rep2.svg'},
             {val: 'segno', img: 'segno.svg'},
             {val: 'fin', img: 'fin.svg'}
         ];
