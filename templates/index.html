@@ -1619,9 +1619,8 @@
             paperBgColor: "#F7F5EA",
             ghostColor: "#998166",
             ghostLineColor: "#E5DCD0",
-            defMeasureCount: 4,
             maxPaperWidth: 1100,
-            emptyMeasureLen: 10
+            emptyMeasureLen: 4
         };
         // prep work
         let windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
@@ -1685,9 +1684,8 @@
             let pTop = configs.padding.top;
             let satirWidth = scorePaperWidth - pLeft - pRight;
             let numOfReqLines = 1;
-            configs.defMeasureCount = Math.floor((satirWidth / configs.porteLineHeight) / 20);
 
-            while (measures.length < configs.defMeasureCount) {
+            if (measures.length === 0) {
                 measures.push(new Measure());
             }
 
@@ -1702,6 +1700,22 @@
                     satirlar.push(satir);
                 }
                 satir.addMeasure(measure);
+            }
+
+            let measure = new Measure();
+            while (satir.acceptsMeasure(measure)) {
+                satir.addMeasure(measure);
+                measure = new Measure();
+            }
+
+            numOfReqLines += 1;
+            offsetTop += 17 * configs.porteLineHeight;
+            satir = new SatirObject(paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0]);
+            satirlar.push(satir);
+            measure = new Measure();
+            while (satir.acceptsMeasure(measure)) {
+                satir.addMeasure(measure);
+                measure = new Measure();
             }
 
             svgElem.style.height = (configs.padding.top + configs.padding.bottom) + (numOfReqLines * 17 * configs.porteLineHeight) + 'px';
@@ -1754,12 +1768,12 @@
 
         tmmScore.setAccidentals(['B4b4', 'F5#4', 'C5#4']);
         tmmScore.setMeter('9/8');
-        /*
+
         let measure = new Measure();
         measure.addNote('Do5#4', '1/16');
         measure.addNote('Do5', '1/8');
         tmmScore.addMeasure(measure);
-
+/*
         measure.addNote('Rest', '1/32');
         measure.addNote('Rest', '1/16');
         measure.addNote('Rest', '1/8');
