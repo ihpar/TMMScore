@@ -666,6 +666,9 @@
         }
 
         this.getDuration = function () {
+            if (this.isDotted) {
+                return 3 / (2 * this.durDen);
+            }
             return this.durNum / this.durDen;
         };
 
@@ -1040,14 +1043,6 @@
                 this.eraseMeasure();
             }
 
-            let isFull = this.isFull();
-            let space = this.porteLiHe * 1.5;
-
-            let rw = this.widthDiff / (this.notes.length + 1);
-            if (forMinWidth) {
-                rw = 0;
-            }
-            let left = this.sParams.startLeft + space + rw;
             let color = this.sParams.cfg.noteColor;
             let lThickness = this.sParams.cfg.lineThickness;
             let lColor = this.sParams.cfg.porteLineColor;
@@ -1059,18 +1054,27 @@
 
             let accidentals = JSON.parse(JSON.stringify(this.mAccidentals));
 
+            let isFull = this.isFull();
+            let space = this.porteLiHe * 1.5;
+            let smallSpacer = this.widthDiff / (this.notes.length + 1);
+            if (forMinWidth) {
+                smallSpacer = 0;
+            }
+
+            let left = this.sParams.startLeft + space + smallSpacer;
+
             for (let note of this.notes) {
                 let acci = this.getReqAccidental(note, accidentals);
                 let noteG = note.drawNote(this.sParams.paper, this.porteLiHe, lThickness, left, this.porteTop, color, lColor, acci);
                 if (!forMinWidth) {
                     this.noteLefts.push(left);
                 }
-                left += noteG.getBBox().width + space + rw;
+                left += noteG.getBBox().width + space + smallSpacer;
                 this.paperNotes.push(noteG);
             }
 
             if (this.notes.length === 0) {
-                left = this.sParams.startLeft + this.sParams.cfg.emptyMeasureWidth + rw;
+                left = this.sParams.startLeft + this.sParams.cfg.emptyMeasureWidth + smallSpacer;
             } else {
                 if (!isFull) {
                     left += space;
