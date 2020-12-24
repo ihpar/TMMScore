@@ -665,6 +665,10 @@
             this.noteRoot = "rest";
         }
 
+        this.getDuration = function () {
+            return this.durNum / this.durDen;
+        };
+
         this.getNote = function () {
             if (this.isRest) {
                 return this.noteRoot;
@@ -880,7 +884,7 @@
 
     function Measure() {
         this.notes = [];
-        this.reqWidth = 0;
+        this.minimumWidth = 0;
         this.widthDiff = 0;
         this.startPos = 0;
         this.endPos = 0;
@@ -904,6 +908,18 @@
         this.sParams = null;
         this.mAccidentals = null;
         this.mLine = null;
+        this.meter = {
+            strVer: "",
+            num: 0,
+            den: 1
+        };
+
+        this.setMeasureMeter = function (strMeter) {
+            this.meter.strVer = strMeter;
+            let parts = strMeter.split('/');
+            this.meter.num = parseInt(parts[0]);
+            this.meter.den = parseInt(parts[1]);
+        }
 
         this.addNote = function (pitch, dur) {
             let note = new Note(pitch, dur);
@@ -914,15 +930,15 @@
             return this.notes;
         };
 
-        this.getRequiredWidth = function () {
-            if (this.reqWidth === 0) {
+        this.getMinimumWidth = function () {
+            if (this.minimumWidth === 0) {
                 if (this.notes.length === 0) {
-                    this.reqWidth = this.porteLiHe * 1.5 * this.sParams.cfg.emptyMeasureLen;
+                    this.minimumWidth = this.sParams.cfg.emptyMeasureWidth;
                 } else {
-                    this.reqWidth = this.drawMeasure(true);
+                    this.minimumWidth = this.drawMeasure(true, false);
                 }
             }
-            return this.reqWidth;
+            return this.minimumWidth;
         };
 
         this.setWidthDiff = function (diff) {
@@ -985,35 +1001,58 @@
             }
         };
 
-        this.drawMeasure = function (forReqWidth, refresh) {
-            if (refresh) {
-                for (let pNote of this.paperNotes) {
-                    pNote.remove();
-                }
-                this.paperNotes = [];
-                this.noteLefts = [];
+        this.eraseMeasure = function () {
+            for (let pNote of this.paperNotes) {
+                pNote.remove();
+            }
 
+            if (this.mLine) {
                 this.mLine.remove();
                 this.mLine = null;
+            }
 
+            if (this.guideGroup) {
                 this.guideGroup.remove();
                 this.guideGroup = null;
+            }
 
+            if (this.notesGroup) {
                 this.notesGroup.remove();
                 this.notesGroup = null;
-
-                this.allYPos = [];
             }
+
+            this.paperNotes = [];
+            this.noteLefts = [];
+            this.allYPos = [];
+        };
+
+        this.isFull = function () {
+            let total = 0;
+            let epsilon = 0.001;
+            for (let note of this.notes) {
+                total += note.getDuration();
+            }
+            return (total + epsilon) >= (this.meter.num / this.meter.den);
+        };
+
+        this.drawMeasure = function (forMinWidth, refresh) {
+            if (refresh) {
+                this.eraseMeasure();
+            }
+
+            let isFull = this.isFull();
+            let space = this.porteLiHe * 1.5;
+
             let rw = this.widthDiff / (this.notes.length + 1);
-            if (forReqWidth) {
+            if (forMinWidth) {
                 rw = 0;
             }
-            let left = this.sParams.startLeft + this.porteLiHe * 1.5 + rw;
+            let left = this.sParams.startLeft + space + rw;
             let color = this.sParams.cfg.noteColor;
             let lThickness = this.sParams.cfg.lineThickness;
             let lColor = this.sParams.cfg.porteLineColor;
 
-            if (forReqWidth) {
+            if (forMinWidth) {
                 color = 'transparent';
                 lColor = 'transparent';
             }
@@ -1023,73 +1062,74 @@
             for (let note of this.notes) {
                 let acci = this.getReqAccidental(note, accidentals);
                 let noteG = note.drawNote(this.sParams.paper, this.porteLiHe, lThickness, left, this.porteTop, color, lColor, acci);
-                if (!forReqWidth) {
+                if (!forMinWidth) {
                     this.noteLefts.push(left);
                 }
-                left += noteG.getBBox().width + this.porteLiHe * 1.5 + rw;
+                left += noteG.getBBox().width + space + rw;
                 this.paperNotes.push(noteG);
             }
 
             if (this.notes.length === 0) {
-                left += this.porteLiHe * 1.5 * (this.sParams.cfg.emptyMeasureLen - 1);
+                left = this.sParams.startLeft + this.sParams.cfg.emptyMeasureWidth + rw;
+            } else {
+                if (!isFull) {
+                    left += space;
+                }
             }
 
             if (Math.abs(this.sParams.endPos - left) <= 1 || (left > this.sParams.endPos)) {
                 left = this.sParams.endPos;
             }
 
+            if (forMinWidth) {
+                this.eraseMeasure();
+                return left;
+            }
+
+            let epsilon = this.porteLiHe / 5;
+
+            // measure bounding box
             this.endPos = left;
-            let x1 = left;
-            let y1 = this.porteTop;
-            let y2 = this.porteTop + this.porteLiHe * 4;
-            if (!forReqWidth) {
-                let eps = this.porteLiHe / 5;
+            this.box.top = this.porteTop - this.porteLiHe * 5;
+            this.box.right = this.endPos - epsilon;
+            this.box.bottom = this.porteTop + this.porteLiHe * 9;
+            this.box.left = this.startPos + epsilon;
 
-                this.box.top = this.porteTop - this.porteLiHe * 5;
-                this.box.right = this.endPos - eps;
-                this.box.bottom = this.porteTop + this.porteLiHe * 9;
-                this.box.left = this.startPos + eps;
+            // measure ending line
+            this.mLine = this.sParams.paper.line(left, this.porteTop, left, this.porteTop + this.porteLiHe * 4);
+            this.mLine.attr({
+                stroke: this.sParams.cfg.porteLineColor,
+                strokeWidth: this.sParams.cfg.lineThickness
+            });
 
-                this.mLine = this.sParams.paper.line(x1, y1, x1, y2);
-                this.mLine.attr({
-                    stroke: this.sParams.cfg.porteLineColor,
-                    strokeWidth: this.sParams.cfg.lineThickness
-                });
+            // draw upper & lower guide lines
+            let y;
+            this.guideGroup = this.sParams.paper.g();
+            for (let i = 1; i <= 5; i++) {
+                y = this.porteTop - i * this.porteLiHe;
+                let upperLine = this.sParams.paper.line(this.box.left, y, this.box.right, y);
+                this.guideGroup.add(upperLine);
 
-                // draw upper lower lines
-                let y;
-                this.guideGroup = this.sParams.paper.g();
-                for (let i = 1; i <= 5; i++) {
-                    y = this.porteTop - i * this.porteLiHe;
-                    let upperLine = this.sParams.paper.line(this.box.left, y, this.box.right, y);
-                    this.guideGroup.add(upperLine);
+                y = this.porteTop + (i + 4) * this.porteLiHe;
+                let lowerLine = this.sParams.paper.line(this.box.left, y, this.box.right, y);
+                this.guideGroup.add(lowerLine);
+            }
+            this.guideGroup.attr({
+                stroke: 'transparent',
+                strokeWidth: this.sParams.cfg.lineThickness
+            });
 
-                    y = this.porteTop + (i + 4) * this.porteLiHe;
-                    let lowerLine = this.sParams.paper.line(this.box.left, y, this.box.right, y);
-                    this.guideGroup.add(lowerLine);
-                }
-                this.guideGroup.attr({
-                    stroke: 'transparent',
-                    strokeWidth: this.sParams.cfg.lineThickness
-                });
+            this.guideGroup.addClass('no-print');
 
-                this.guideGroup.addClass('no-print');
+            // create group for notes
+            this.notesGroup = this.sParams.paper.g();
+            for (let paperNote of this.paperNotes) {
+                this.notesGroup.add(paperNote);
+            }
 
-                this.notesGroup = this.sParams.paper.g();
-                for (let paperNote of this.paperNotes) {
-                    this.notesGroup.add(paperNote);
-                }
-
-                // set y coords
-                for (let i = -10; i <= 18; i++) {
-                    this.allYPos.push(this.porteTop + (this.porteLiHe / 2) * i);
-                }
-            } else {
-                for (let i = 0; i < this.paperNotes.length; i++) {
-                    this.paperNotes[i].remove();
-                }
-                this.paperNotes = [];
-                this.notesGroup = null;
+            // set y coords of all possible notes
+            for (let i = -10; i <= 18; i++) {
+                this.allYPos.push(this.porteTop + (this.porteLiHe / 2) * i);
             }
 
             return left;
@@ -1381,6 +1421,7 @@
         this.measures = [];
         this.remainingWidth = width;
         this.accidentals = accidentals;
+        this.timeSig = timeSig;
         this.accidentalsGroup = null;
         this.box = {
             top: 0,
@@ -1416,14 +1457,14 @@
                 // if this is the first measure always accept
                 return true;
             }
-            return (this.remainingWidth >= measure.getRequiredWidth());
+            return (this.remainingWidth >= measure.getMinimumWidth());
         };
 
         this.distributeWidth = function (remWid) {
             let widths = [];
             let total = 0;
             for (let measure of this.measures) {
-                let w = measure.getRequiredWidth();
+                let w = measure.getMinimumWidth();
                 widths.push(w);
                 total += w;
             }
@@ -1435,8 +1476,9 @@
         this.addMeasure = function (measure) {
             let sParams = this.getMWParams();
             measure.setSParams(sParams);
+            measure.setMeasureMeter(this.timeSig.num + '/' + this.timeSig.den);
             this.measures.push(measure);
-            this.remainingWidth -= measure.getRequiredWidth(sParams);
+            this.remainingWidth -= measure.getMinimumWidth();
         };
 
         this.drawLines = function () {
@@ -1510,10 +1552,10 @@
             return leftUsablePos;
         };
 
-        this.drawMeter = function (leftUsablePos, timeSig) {
+        this.drawMeter = function (leftUsablePos) {
             leftUsablePos += porteLiHe / 2;
             let scaleFactor = parseFloat((porteLiHe / 2.5).toFixed(2));
-            let numElems = ('' + timeSig.num).split('');
+            let numElems = ('' + this.timeSig.num).split('');
             let locLeft = 0;
             let numG = this.paper.g();
             let translateStr, scaleStr;
@@ -1531,7 +1573,7 @@
             translateStr = 't ' + leftUsablePos + ' ' + (this.top + this.configs.lineThickness);
             numG.transform(translateStr);
 
-            let denElems = ('' + timeSig.den).split('');
+            let denElems = ('' + this.timeSig.den).split('');
             let denG = this.paper.g();
             locLeft = 0;
             for (let n of denElems) {
@@ -1574,7 +1616,7 @@
 
             for (let measure of this.measures) {
                 measure.setSParams(sParams);
-                leftUsablePos = measure.drawMeasure(false);
+                leftUsablePos = measure.drawMeasure(false, false);
                 sParams.startLeft = leftUsablePos;
             }
         };
@@ -1595,7 +1637,7 @@
             this.drawLines();
             leftUsablePos = this.drawClef();
             leftUsablePos = this.drawAccidentals(this.accidentals, leftUsablePos);
-            leftUsablePos = this.drawMeter(leftUsablePos, timeSig);
+            leftUsablePos = this.drawMeter(leftUsablePos);
 
             this.remainingWidth = this.width - (leftUsablePos - this.left);
 
@@ -1620,8 +1662,10 @@
             ghostColor: "#998166",
             ghostLineColor: "#E5DCD0",
             maxPaperWidth: 1100,
-            emptyMeasureLen: 4
+            emptyMeasureLen: 4,
+            emptyMeasureWidth: 0
         };
+        configs.emptyMeasureWidth = configs.emptyMeasureLen * configs.porteLineHeight * 1.5;
         // prep work
         let windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
         let scorePaperWidth = configs.maxPaperWidth;
@@ -1689,6 +1733,7 @@
                 measures.push(new Measure());
             }
 
+            // draw existing measures
             let offsetTop = pTop + (6 * configs.porteLineHeight);
             let satir = new SatirObject(paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0]);
             satirlar.push(satir);
@@ -1702,12 +1747,14 @@
                 satir.addMeasure(measure);
             }
 
+            // complete last line
             let measure = new Measure();
             while (satir.acceptsMeasure(measure)) {
                 satir.addMeasure(measure);
                 measure = new Measure();
             }
 
+            // add a blank line
             numOfReqLines += 1;
             offsetTop += 17 * configs.porteLineHeight;
             satir = new SatirObject(paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0]);
@@ -1769,27 +1816,31 @@
         tmmScore.setAccidentals(['B4b4', 'F5#4', 'C5#4']);
         tmmScore.setMeter('9/8');
 
+
         let measure = new Measure();
         measure.addNote('Do5#4', '1/16');
         measure.addNote('Do5', '1/8');
+
         tmmScore.addMeasure(measure);
-/*
+
+        measure = new Measure();
+        /*
         measure.addNote('Rest', '1/32');
         measure.addNote('Rest', '1/16');
         measure.addNote('Rest', '1/8');
         measure.addNote('Rest', '1/4');
         measure.addNote('Rest', '1/2');
         measure.addNote('Rest', '1/1');
+        */
 
-        measure.addNote('Do6#4', '1/16');
-        measure.addNote('Re6', '1/16');
-        measure.addNote('Mi6', '1/16');
-        measure.addNote('Sol5', '1/16');
-        measure.addNote('La5b5', '3/8');
-        measure.addNote('Si5b5', '3/8');
+        measure.addNote('Do5#4', '1/8');
+        measure.addNote('Re5', '1/8');
+        measure.addNote('Do5#4', '1/4');
+        measure.addNote('Sol4', '3/8');
+        measure.addNote('La4', '1/4');
 
         tmmScore.addMeasure(measure);
-
+        /*
         measure = new Measure();
         measure.addNote('Do3#4', '1/4');
         measure.addNote('Re3#1', '1/32');
@@ -1815,17 +1866,6 @@
         tmmScore.addMeasure(measure);
 
         measure = new Measure();
-        measure.addNote('Sol4', '1/2');
-        measure.addNote('La4', '1/4');
-        measure.addNote('Si4b4', '1/8');
-        measure.addNote('Do5#4', '1/16');
-        measure.addNote('Si4b4', '1/8');
-        measure.addNote('Do5#4', '1/16');
-        measure.addNote('Re5', '1/16');
-
-        tmmScore.addMeasure(measure);
-
-        measure = new Measure();
         measure.addNote('Do5#4', '1/16');
         measure.addNote('Si4b4', '1/8');
         measure.addNote('La5', '1/8');
@@ -1845,12 +1885,6 @@
         measure.addNote('Re5', '1/8');
         measure.addNote('Do5#4', '1/16');
 
-        tmmScore.addMeasure(measure);
-
-        measure = new Measure();
-        tmmScore.addMeasure(measure);
-
-        measure = new Measure();
         tmmScore.addMeasure(measure);
         */
         tmmScore.drawScore();
