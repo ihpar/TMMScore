@@ -887,7 +887,6 @@
 
     function Measure() {
         this.notes = [];
-        this.minimumWidth = 0;
         this.widthDiff = 0;
         this.startPos = 0;
         this.endPos = 0;
@@ -916,6 +915,10 @@
             num: 0,
             den: 1
         };
+        this.maxSpace = 0;
+        this.minSpace = 0;
+        this.lastDrawnWidth = 0;
+        this.parentSatir = null;
 
         this.setMeasureMeter = function (strMeter) {
             this.meter.strVer = strMeter;
@@ -933,22 +936,12 @@
             return this.notes;
         };
 
-        this.getMinimumWidth = function () {
-            if (this.minimumWidth === 0) {
-                if (this.notes.length === 0) {
-                    this.minimumWidth = this.sParams.cfg.emptyMeasureWidth;
-                } else {
-                    this.minimumWidth = this.drawMeasure(true, false);
-                }
-            }
-            return this.minimumWidth;
-        };
-
         this.setWidthDiff = function (diff) {
             this.widthDiff = diff;
         };
 
         this.setSParams = function (sParams) {
+            this.parentSatir = sParams.parentSatir;
             this.sParams = Object.assign({}, sParams);
             this.mAccidentals = JSON.parse(JSON.stringify(this.sParams.accidentals));
             this.startPos = this.sParams.startLeft;
@@ -956,6 +949,8 @@
             this.porteLiHe = this.sParams.cfg.porteLineHeight;
             this.ghostColor = this.sParams.cfg.ghostColor;
             this.ghostLineColor = this.sParams.cfg.ghostLineColor;
+            this.maxSpace = this.porteLiHe * 2;
+            this.minSpace = this.porteLiHe * 1.0;
         };
 
         this.getReqAccidental = function (note, accidentals) {
@@ -1038,38 +1033,74 @@
             return (total + epsilon) >= (this.meter.num / this.meter.den);
         };
 
-        this.drawMeasure = function (forMinWidth, refresh) {
-            if (refresh) {
+        this.getCompressedWidth = function () {
+            let color = 'transparent';
+            let lColor = 'transparent';
+            let lThickness = this.sParams.cfg.lineThickness;
+            let left = 0, top = 0;
+            let accidentals = JSON.parse(JSON.stringify(this.mAccidentals));
+            let compressedWidth = 0;
+            for (let note of this.notes) {
+                let acci = this.getReqAccidental(note, accidentals);
+                let noteG = note.drawNote(this.sParams.paper, this.porteLiHe, lThickness, left, top, color, lColor, acci);
+                compressedWidth += noteG.getBBox().width;
+                noteG.remove();
+            }
+            return compressedWidth;
+        };
+
+        this.getIdealWidth = function () {
+            let noteCount = this.notes.length;
+            if (noteCount === 0) {
+                return this.sParams.cfg.emptyMeasureWidth;
+            }
+
+            let compressedWid = this.getCompressedWidth();
+            let isFull = this.isFull();
+            let numSpaces = isFull ? (noteCount + 1) : (noteCount + 2);
+            return compressedWid + numSpaces * this.maxSpace;
+        };
+
+        this.needsEnlargement = function () {
+            let noteCount = this.notes.length;
+            if (noteCount === 0) {
+                return false;
+            }
+            let compressedWid = this.getCompressedWidth();
+            let isFull = this.isFull();
+            let numSpaces = isFull ? (noteCount + 1) : (noteCount + 2);
+            return ((this.lastDrawnWidth - compressedWid) / numSpaces) < this.minSpace;
+        };
+
+        this.drawMeasure = function (fitToOldWidth) {
+            if (this.lastDrawnWidth) {
                 this.eraseMeasure();
+            }
+            let space, smallSpacer;
+            let isFull = this.isFull();
+            if (fitToOldWidth) {
+                smallSpacer = 0;
+                let compressedWid = this.getCompressedWidth();
+                let numSpaces = isFull ? (this.notes.length + 1) : (this.notes.length + 2);
+                space = (this.lastDrawnWidth - compressedWid) / numSpaces;
+            } else {
+                space = this.maxSpace;
+                smallSpacer = this.widthDiff / (this.notes.length + 1);
             }
 
             let color = this.sParams.cfg.noteColor;
             let lThickness = this.sParams.cfg.lineThickness;
             let lColor = this.sParams.cfg.porteLineColor;
 
-            if (forMinWidth) {
-                color = 'transparent';
-                lColor = 'transparent';
-            }
-
             let accidentals = JSON.parse(JSON.stringify(this.mAccidentals));
-
-            let isFull = this.isFull();
-            let space = this.porteLiHe * 1.5;
-            let smallSpacer = this.widthDiff / (this.notes.length + 1);
-            if (forMinWidth) {
-                smallSpacer = 0;
-            }
-
             let left = this.sParams.startLeft + space + smallSpacer;
 
             for (let note of this.notes) {
                 let acci = this.getReqAccidental(note, accidentals);
                 let noteG = note.drawNote(this.sParams.paper, this.porteLiHe, lThickness, left, this.porteTop, color, lColor, acci);
-                if (!forMinWidth) {
-                    this.noteLefts.push(left);
-                }
-                left += noteG.getBBox().width + space + smallSpacer;
+                this.noteLefts.push(left);
+                let noteWidth = noteG.getBBox().width;
+                left += noteWidth + space + smallSpacer;
                 this.paperNotes.push(noteG);
             }
 
@@ -1081,14 +1112,12 @@
                 }
             }
 
-            if (Math.abs(this.sParams.endPos - left) <= 1 || (left > this.sParams.endPos)) {
+            let endingDiff = this.sParams.endPos - left;
+            if (Math.abs(endingDiff) <= 1 || (endingDiff < 0)) {
                 left = this.sParams.endPos;
             }
 
-            if (forMinWidth) {
-                this.eraseMeasure();
-                return left;
-            }
+            this.lastDrawnWidth = left - this.sParams.startLeft;
 
             let epsilon = this.porteLiHe / 5;
 
@@ -1145,11 +1174,10 @@
                 switch (mParams.type) {
                     case 'note':
                         if (mParams.duration) {
-                            if (!this.ghostsVisible) {
-                                this.guideGroup.attr({
-                                    stroke: this.ghostLineColor
-                                });
-                            }
+                            this.guideGroup.attr({
+                                stroke: this.ghostLineColor
+                            });
+
                             if (y >= (this.allYPos[14] + this.porteLiHe / 4)) {
                                 mParams.ghostNote.symbol.attr({
                                     fill: this.ghostColor
@@ -1305,8 +1333,6 @@
                     default:
                         break;
                 }
-
-
             } else {
                 switch (mParams.type) {
                     case 'note':
@@ -1349,7 +1375,6 @@
                     default:
                         break;
                 }
-
             }
         };
 
@@ -1358,37 +1383,43 @@
                 let i, note;
                 switch (mParams.type) {
                     case 'note':
-                        let snapPos = this.allYPos[0];
-                        let min = this.porteLiHe * 100;
-                        for (let i = 0; i < this.allYPos.length; i++) {
-                            let diff = Math.abs(y - this.allYPos[i]);
-                            if (diff < min) {
-                                snapPos = i;
-                                min = diff;
+                        if (mParams.duration) {
+                            let snapPos = this.allYPos[0];
+                            let min = this.porteLiHe * 100;
+                            for (let i = 0; i < this.allYPos.length; i++) {
+                                let diff = Math.abs(y - this.allYPos[i]);
+                                if (diff < min) {
+                                    snapPos = i;
+                                    min = diff;
+                                }
                             }
-                        }
-                        snapPos = (snapPos - 10) / 2;
-                        let noteRoot = notePositionsRev[snapPos + ''];
-                        let noteAcci = mParams.acci ? mParams.acci : '';
-                        let isDotted = mParams.dot;
-                        let durDen = parseInt(mParams.duration.replace('n', ''));
-                        let durNum = isDotted ? 3 : 1;
-                        durDen = isDotted ? durDen * 2 : durDen;
-                        let fullDur = durNum + '/' + durDen;
-                        i = 0;
-                        for (let nl of this.noteLefts) {
-                            if (nl < x) {
-                                i++;
+                            snapPos = (snapPos - 10) / 2;
+                            let noteRoot = notePositionsRev[snapPos + ''];
+                            let noteAcci = mParams.acci ? mParams.acci : '';
+                            let isDotted = mParams.dot;
+                            let durDen = parseInt(mParams.duration.replace('n', ''));
+                            let durNum = isDotted ? 3 : 1;
+                            durDen = isDotted ? durDen * 2 : durDen;
+                            let fullDur = durNum + '/' + durDen;
+                            i = 0;
+                            for (let nl of this.noteLefts) {
+                                if (nl < x) {
+                                    i++;
+                                } else {
+                                    break;
+                                }
+                            }
+                            let cAcci = this.getReqAccidentalAtPos(noteRoot, noteAcci, i);
+                            cAcci = cAcci.replace('d', '#');
+                            let fullPitch = noteRoot + cAcci;
+                            note = new Note(fullPitch, fullDur);
+                            this.notes.splice(i, 0, note);
+                            if (this.needsEnlargement()) {
+                                this.parentSatir.redrawSatir();
                             } else {
-                                break;
+                                this.drawMeasure(true);
                             }
                         }
-                        let cAcci = this.getReqAccidentalAtPos(noteRoot, noteAcci, i);
-                        cAcci = cAcci.replace('d', '#');
-                        let fullPitch = noteRoot + cAcci;
-                        note = new Note(fullPitch, fullDur);
-                        this.notes.splice(i, 0, note);
-                        this.drawMeasure(false, true);
                         break;
                     case 'rest':
                         let restBody = 'Rest';
@@ -1403,7 +1434,11 @@
                         }
                         note = new Note(restBody, restDur);
                         this.notes.splice(i, 0, note);
-                        this.drawMeasure(false, true);
+                        if (this.needsEnlargement()) {
+                            this.parentSatir.redrawSatir();
+                        } else {
+                            this.drawMeasure(true);
+                        }
                         break;
                     default:
                         break;
@@ -1412,7 +1447,9 @@
         };
     }
 
-    function SatirObject(paper, configs, left, top, width, accidentals, timeSig) {
+    function SatirObject(satirNo, paper, configs, left, top, width, accidentals, timeSig, parentScore) {
+        this.satirNo = satirNo;
+        this.parentScore = parentScore;
         this.paper = paper;
         this.configs = configs;
         this.left = left;
@@ -1450,7 +1487,8 @@
                 cfg: this.configs,
                 endPos: this.width + this.left,
                 paper: this.paper,
-                accidentals: acci
+                accidentals: acci,
+                parentSatir: this
             };
         };
 
@@ -1461,14 +1499,14 @@
                 // if this is the first measure always accept
                 return true;
             }
-            return (this.remainingWidth >= measure.getMinimumWidth());
+            return (this.remainingWidth >= measure.getIdealWidth());
         };
 
         this.distributeWidth = function (remWid) {
             let widths = [];
             let total = 0;
             for (let measure of this.measures) {
-                let w = measure.getMinimumWidth();
+                let w = measure.getIdealWidth();
                 widths.push(w);
                 total += w;
             }
@@ -1482,7 +1520,7 @@
             measure.setSParams(sParams);
             measure.setMeasureMeter(this.timeSig.num + '/' + this.timeSig.den);
             this.measures.push(measure);
-            this.remainingWidth -= measure.getMinimumWidth();
+            this.remainingWidth -= measure.getIdealWidth();
         };
 
         this.drawLines = function () {
@@ -1603,26 +1641,39 @@
         this.drawSatir = function () {
             this.distributeWidth(this.remainingWidth);
 
-            let acci = {};
-            for (let note of this.accidentals.notes) {
-                let name = noteNameDict[note.noteRoot];
-                acci[name] = note.noteComma;
-            }
+            let sParams = this.getMWParams();
+            let leftOffset = leftUsablePos;
 
-            let sParams = {
-                startLeft: leftUsablePos,
-                startTop: this.top,
-                cfg: this.configs,
-                endPos: this.width + this.left,
-                paper: this.paper,
-                accidentals: acci
-            };
+            sParams.startLeft = leftOffset;
+            sParams.startTop = this.top;
 
             for (let measure of this.measures) {
                 measure.setSParams(sParams);
-                leftUsablePos = measure.drawMeasure(false, false);
-                sParams.startLeft = leftUsablePos;
+                leftOffset = measure.drawMeasure(false);
+                sParams.startLeft = leftOffset;
             }
+        };
+
+        this.redrawSatir = function () {
+            this.remainingWidth = this.width - (leftUsablePos - this.left);
+            let fittedMeasures = [];
+            let unfittedMeasures = [];
+            let remWid = 0;
+            for (let measure of this.measures) {
+                measure.eraseMeasure();
+                this.remainingWidth -= measure.getIdealWidth();
+                if (this.remainingWidth >= 0) {
+                    fittedMeasures.push(measure);
+                    remWid = this.remainingWidth;
+                } else {
+                    unfittedMeasures.push(measure);
+                }
+            }
+            this.remainingWidth = remWid;
+            this.measures = fittedMeasures;
+
+            this.drawSatir();
+            this.parentScore.prependUnfittedMeasures(unfittedMeasures, this.satirNo);
         };
 
         this.handleMouse = function (x, y) {
@@ -1725,6 +1776,10 @@
             measures.push(measure);
         };
 
+        this.prependUnfittedMeasures = function (measures, senderSatirNo) {
+            console.log('prepend', senderSatirNo, measures);
+        };
+
         this.initScore = function () {
             // create satir objects
             let pLeft = configs.padding.left;
@@ -1732,6 +1787,7 @@
             let pTop = configs.padding.top;
             let satirWidth = scorePaperWidth - pLeft - pRight;
             let numOfReqLines = 1;
+            let satirNo = 0;
 
             if (measures.length === 0) {
                 measures.push(new Measure());
@@ -1739,13 +1795,15 @@
 
             // draw existing measures
             let offsetTop = pTop + (6 * configs.porteLineHeight);
-            let satir = new SatirObject(paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0]);
+            let satir = new SatirObject(satirNo, paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0], this);
+            satirNo += 1;
             satirlar.push(satir);
             for (let measure of measures) {
                 if (!satir.acceptsMeasure(measure)) {
                     numOfReqLines += 1;
                     offsetTop += 17 * configs.porteLineHeight;
-                    satir = new SatirObject(paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0]);
+                    satir = new SatirObject(satirNo, paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0], this);
+                    satirNo += 1;
                     satirlar.push(satir);
                 }
                 satir.addMeasure(measure);
@@ -1761,7 +1819,7 @@
             // add a blank line
             numOfReqLines += 1;
             offsetTop += 17 * configs.porteLineHeight;
-            satir = new SatirObject(paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0]);
+            satir = new SatirObject(satirNo, paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0], this);
             satirlar.push(satir);
             measure = new Measure();
             while (satir.acceptsMeasure(measure)) {
