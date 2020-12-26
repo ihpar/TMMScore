@@ -192,6 +192,8 @@
         type: null
     };
 
+    let cNoteWidths = {};
+
     function makamMenuItemClick(e) {
         let sender = e.currentTarget;
         let selectedMakam = sender.innerHTML;
@@ -228,36 +230,27 @@
             if (isAcc) {
                 // deactivate rest
                 mParams.rest = null;
-                document.querySelectorAll('.rest-btn').forEach((button) => {
-                    button.classList.remove('clicked');
-                });
+                if (mParams.type === 'rest') {
+                    mParams.type = null;
+                }
+                document.querySelectorAll('.rest-btn').forEach((button) => button.classList.remove('clicked'));
                 // deactivate loc
                 mParams.loc = null;
-                document.querySelectorAll('.loc-btn').forEach((button) => {
-                    button.classList.remove('clicked');
-                });
+                document.querySelectorAll('.loc-btn').forEach((button) => button.classList.remove('clicked'));
                 // activate acc
-                document.querySelectorAll('.acc-btn').forEach((button) => {
-                    button.classList.remove('clicked');
-                });
+                document.querySelectorAll('.acc-btn').forEach((button) => button.classList.remove('clicked'));
                 mParams.acci = sender.getAttribute('data-acc-val');
             }
 
             if (isDur) {
                 // deactivate rest
                 mParams.rest = null;
-                document.querySelectorAll('.rest-btn').forEach((button) => {
-                    button.classList.remove('clicked');
-                });
+                document.querySelectorAll('.rest-btn').forEach((button) => button.classList.remove('clicked'));
                 // deactivate loc
                 mParams.loc = null;
-                document.querySelectorAll('.loc-btn').forEach((button) => {
-                    button.classList.remove('clicked');
-                });
+                document.querySelectorAll('.loc-btn').forEach((button) => button.classList.remove('clicked'));
                 // activate dur
-                document.querySelectorAll('.dur-btn').forEach((button) => {
-                    button.classList.remove('clicked');
-                });
+                document.querySelectorAll('.dur-btn').forEach((button) => button.classList.remove('clicked'));
 
                 mParams.type = 'note';
                 mParams.duration = sender.getAttribute('data-dur-val');
@@ -299,26 +292,18 @@
             if (isRest) {
                 // deactivate acci
                 mParams.acci = null;
-                document.querySelectorAll('.acc-btn').forEach((button) => {
-                    button.classList.remove('clicked');
-                });
+                document.querySelectorAll('.acc-btn').forEach((button) => button.classList.remove('clicked'));
                 // deactivate dur
                 mParams.duration = null;
-                document.querySelectorAll('.dur-btn').forEach((button) => {
-                    button.classList.remove('clicked');
-                });
+                document.querySelectorAll('.dur-btn').forEach((button) => button.classList.remove('clicked'));
                 // deactivate dot
                 mParams.dot = false;
                 document.querySelector('.dot-btn').classList.remove('clicked');
                 // deactivate loc
                 mParams.loc = null;
-                document.querySelectorAll('.loc-btn').forEach((button) => {
-                    button.classList.remove('clicked');
-                });
+                document.querySelectorAll('.loc-btn').forEach((button) => button.classList.remove('clicked'));
                 // activate rest
-                document.querySelectorAll('.rest-btn').forEach((button) => {
-                    button.classList.remove('clicked');
-                });
+                document.querySelectorAll('.rest-btn').forEach((button) => button.classList.remove('clicked'));
 
                 mParams.type = 'rest';
                 mParams.rest = sender.getAttribute('data-rest-val');
@@ -342,26 +327,18 @@
             if (isLoc) {
                 // deactivate acci
                 mParams.acci = null;
-                document.querySelectorAll('.acc-btn').forEach((button) => {
-                    button.classList.remove('clicked');
-                });
+                document.querySelectorAll('.acc-btn').forEach((button) => button.classList.remove('clicked'));
                 // deactivate dur
                 mParams.duration = null;
-                document.querySelectorAll('.dur-btn').forEach((button) => {
-                    button.classList.remove('clicked');
-                });
+                document.querySelectorAll('.dur-btn').forEach((button) => button.classList.remove('clicked'));
                 // deactivate dot
                 mParams.dot = false;
                 document.querySelector('.dot-btn').classList.remove('clicked');
                 // deactivate rest
                 mParams.rest = null;
-                document.querySelectorAll('.rest-btn').forEach((button) => {
-                    button.classList.remove('clicked');
-                });
+                document.querySelectorAll('.rest-btn').forEach((button) => button.classList.remove('clicked'));
                 // activate loc
-                document.querySelectorAll('.loc-btn').forEach((button) => {
-                    button.classList.remove('clicked');
-                });
+                document.querySelectorAll('.loc-btn').forEach((button) => button.classList.remove('clicked'));
 
                 mParams.type = 'loc';
                 mParams.loc = sender.getAttribute('data-loc-val');
@@ -390,16 +367,21 @@
             }
             if (isRest) {
                 mParams.rest = null;
+                mParams.type = null;
 
                 if (mParams.ghostNote.symbol) {
                     mParams.ghostNote.symbol.remove();
                 }
             }
             if (isDur) {
+                mParams.type = null;
                 mParams.duration = null;
                 // deactivate dot
                 mParams.dot = false;
                 document.querySelector('.dot-btn').classList.remove('clicked');
+                // deactivate accidentals
+                mParams.acci = null;
+                document.querySelectorAll('.acc-btn').forEach((button) => button.classList.remove('clicked'));
 
                 if (mParams.ghostNote.symbol) {
                     mParams.ghostNote.symbol.remove();
@@ -413,6 +395,7 @@
             }
             if (isLoc) {
                 mParams.loc = null;
+                mParams.type = null;
 
                 if (mParams.ghostNote.symbol) {
                     mParams.ghostNote.symbol.remove();
@@ -883,6 +866,12 @@
             return noteG;
 
         };
+
+        this.toNoteStr = function () {
+            let s = this.noteRoot;
+            s +=
+            return s;
+        };
     }
 
     function Measure() {
@@ -918,6 +907,7 @@
         this.maxSpace = 0;
         this.minSpace = 0;
         this.lastDrawnWidth = 0;
+        this.compressedWidth = 0;
         this.parentSatir = null;
 
         this.setMeasureMeter = function (strMeter) {
@@ -949,8 +939,8 @@
             this.porteLiHe = this.sParams.cfg.porteLineHeight;
             this.ghostColor = this.sParams.cfg.ghostColor;
             this.ghostLineColor = this.sParams.cfg.ghostLineColor;
-            this.maxSpace = this.porteLiHe * 2;
-            this.minSpace = this.porteLiHe * 1.0;
+            this.maxSpace = this.porteLiHe * 1.6;
+            this.minSpace = this.porteLiHe * 0.8;
         };
 
         this.getReqAccidental = function (note, accidentals) {
@@ -1033,19 +1023,29 @@
             return (total + epsilon) >= (this.meter.num / this.meter.den);
         };
 
-        this.getCompressedWidth = function () {
-            let color = 'transparent';
-            let lColor = 'transparent';
-            let lThickness = this.sParams.cfg.lineThickness;
-            let left = 0, top = 0;
-            let accidentals = JSON.parse(JSON.stringify(this.mAccidentals));
+        this.getCompressedWidth = function (recalculate) {
+            let start = new Date();
             let compressedWidth = 0;
-            for (let note of this.notes) {
-                let acci = this.getReqAccidental(note, accidentals);
-                let noteG = note.drawNote(this.sParams.paper, this.porteLiHe, lThickness, left, top, color, lColor, acci);
-                compressedWidth += noteG.getBBox().width;
-                noteG.remove();
+            if (recalculate) {
+                let color = 'transparent';
+                let lColor = 'transparent';
+                let lThickness = this.sParams.cfg.lineThickness;
+                let left = 0, top = 0;
+                let accidentals = JSON.parse(JSON.stringify(this.mAccidentals));
+
+                for (let note of this.notes) {
+                    let acci = this.getReqAccidental(note, accidentals);
+                    console.log('acci', acci);
+                    let noteG = note.drawNote(this.sParams.paper, this.porteLiHe, lThickness, left, top, color, lColor, acci);
+                    compressedWidth += noteG.getBBox().width;
+                    noteG.remove();
+                }
+                this.compressedWidth = compressedWidth;
+            } else {
+                compressedWidth = this.compressedWidth;
             }
+            let end = new Date();
+            console.log('getCompressedWidth', end - start);
             return compressedWidth;
         };
 
@@ -1055,7 +1055,7 @@
                 return this.sParams.cfg.emptyMeasureWidth;
             }
 
-            let compressedWid = this.getCompressedWidth();
+            let compressedWid = this.getCompressedWidth(true);
             let isFull = this.isFull();
             let numSpaces = isFull ? (noteCount + 1) : (noteCount + 2);
             return compressedWid + numSpaces * this.maxSpace;
@@ -1066,7 +1066,7 @@
             if (noteCount === 0) {
                 return false;
             }
-            let compressedWid = this.getCompressedWidth();
+            let compressedWid = this.getCompressedWidth(true);
             let isFull = this.isFull();
             let numSpaces = isFull ? (noteCount + 1) : (noteCount + 2);
             return ((this.lastDrawnWidth - compressedWid) / numSpaces) < this.minSpace;
@@ -1080,7 +1080,7 @@
             let isFull = this.isFull();
             if (fitToOldWidth) {
                 smallSpacer = 0;
-                let compressedWid = this.getCompressedWidth();
+                let compressedWid = this.getCompressedWidth(false);
                 let numSpaces = isFull ? (this.notes.length + 1) : (this.notes.length + 2);
                 space = (this.lastDrawnWidth - compressedWid) / numSpaces;
             } else {
@@ -1169,99 +1169,90 @@
         };
 
         this.mouseOver = function (x, y) {
-            let scaleFactor, translateStr, scaleStr;
+            let scaleFactor, translateStr, scaleStr, width, height, tTop;
             if ((x >= this.box.left) && (x <= this.box.right) && (y >= this.box.top) && (y <= this.box.bottom)) {
                 switch (mParams.type) {
                     case 'note':
-                        if (mParams.duration) {
-                            this.guideGroup.attr({
-                                stroke: this.ghostLineColor
-                            });
+                        this.guideGroup.attr({
+                            stroke: this.ghostLineColor
+                        });
 
-                            if (y >= (this.allYPos[14] + this.porteLiHe / 4)) {
-                                mParams.ghostNote.symbol.attr({
-                                    fill: this.ghostColor
-                                });
-                                mParams.ghostNote.symbolR.attr({
-                                    fill: 'transparent'
-                                });
-                            } else {
-                                mParams.ghostNote.symbol.attr({
-                                    fill: 'transparent'
-                                });
-                                mParams.ghostNote.symbolR.attr({
-                                    fill: this.ghostColor
-                                });
-                            }
-
-                            let snapPos = this.allYPos[0];
-                            let min = this.porteLiHe * 100;
-                            for (let yPos of this.allYPos) {
-                                let diff = Math.abs(y - yPos);
-                                if (diff < min) {
-                                    snapPos = yPos;
-                                    min = diff;
-                                }
-                            }
-
-                            this.ghostsVisible = true;
-                            scaleFactor = this.porteLiHe / 5;
-                            translateStr = 't ' + (x - this.porteLiHe / 2) + ' ' + snapPos;
-                            scaleStr = 's' + scaleFactor + ' 0 0';
-                            mParams.ghostNote.symbol.transform(translateStr + ' ' + scaleStr);
-                            mParams.ghostNote.symbolR.transform(translateStr + ' ' + scaleStr);
-                            if (mParams.dot) {
-                                mParams.ghostNote.symbolDot.attr({
-                                    fill: this.ghostColor,
-                                    cx: (x - this.porteLiHe / 2) + this.porteLiHe * 3.5 / 2,
-                                    cy: snapPos,
-                                    r: this.porteLiHe / 5
-                                });
-                            }
-                        }
-                        break;
-                    case 'rest':
-                        if (mParams.rest) {
-                            scaleFactor = this.porteLiHe / 5;
-                            scaleStr = 's' + scaleFactor + ' 0 0';
-                            let height = mParams.ghostNote.height * scaleFactor;
-                            let tTop;
-                            switch (mParams.duration) {
-                                case "1/32":
-                                    tTop = this.porteTop + this.porteLiHe * 4 - height;
-                                    break;
-                                case "1/16":
-                                    tTop = this.porteTop + this.porteLiHe * 4 - height;
-                                    break;
-                                case "1/8":
-                                    tTop = this.porteTop + this.porteLiHe * 3 - height;
-                                    break;
-                                case "1/4":
-                                    tTop = this.porteTop + (this.porteLiHe * 4 - height) / 2;
-                                    break;
-                                case "1/2":
-                                    tTop = this.porteTop + (this.porteLiHe * 2) - height;
-                                    break;
-                                case "1/1":
-                                    tTop = this.porteTop + this.porteLiHe;
-                                    break;
-                                default:
-                                    tTop = this.porteTop + (this.porteLiHe * 4 - height) / 2;
-                                    break;
-                            }
-                            translateStr = 't ' + (x - this.porteLiHe / 2) + ' ' + tTop;
-                            mParams.ghostNote.symbol.transform(translateStr + ' ' + scaleStr);
-
+                        if (y >= (this.allYPos[14] + this.porteLiHe / 4)) {
                             mParams.ghostNote.symbol.attr({
                                 fill: this.ghostColor
                             });
-                            this.ghostsVisible = true;
+                            mParams.ghostNote.symbolR.attr({
+                                fill: 'transparent'
+                            });
+                        } else {
+                            mParams.ghostNote.symbol.attr({
+                                fill: 'transparent'
+                            });
+                            mParams.ghostNote.symbolR.attr({
+                                fill: this.ghostColor
+                            });
                         }
+
+                        let snapPos = this.allYPos[0];
+                        let min = this.porteLiHe * 100;
+                        for (let yPos of this.allYPos) {
+                            let diff = Math.abs(y - yPos);
+                            if (diff < min) {
+                                snapPos = yPos;
+                                min = diff;
+                            }
+                        }
+                        scaleFactor = this.porteLiHe / 5;
+                        translateStr = 't ' + (x - this.porteLiHe / 2) + ' ' + snapPos;
+                        scaleStr = 's' + scaleFactor + ' 0 0';
+                        mParams.ghostNote.symbol.transform(translateStr + ' ' + scaleStr);
+                        mParams.ghostNote.symbolR.transform(translateStr + ' ' + scaleStr);
+                        if (mParams.dot) {
+                            mParams.ghostNote.symbolDot.attr({
+                                fill: this.ghostColor,
+                                cx: (x - this.porteLiHe / 2) + this.porteLiHe * 3.5 / 2,
+                                cy: snapPos,
+                                r: this.porteLiHe / 5
+                            });
+                        }
+                        break;
+                    case 'rest':
+                        scaleFactor = this.porteLiHe / 5;
+                        scaleStr = 's' + scaleFactor + ' 0 0';
+                        height = mParams.ghostNote.height * scaleFactor;
+                        switch (mParams.duration) {
+                            case "1/32":
+                                tTop = this.porteTop + this.porteLiHe * 4 - height;
+                                break;
+                            case "1/16":
+                                tTop = this.porteTop + this.porteLiHe * 4 - height;
+                                break;
+                            case "1/8":
+                                tTop = this.porteTop + this.porteLiHe * 3 - height;
+                                break;
+                            case "1/4":
+                                tTop = this.porteTop + (this.porteLiHe * 4 - height) / 2;
+                                break;
+                            case "1/2":
+                                tTop = this.porteTop + (this.porteLiHe * 2) - height;
+                                break;
+                            case "1/1":
+                                tTop = this.porteTop + this.porteLiHe;
+                                break;
+                            default:
+                                tTop = this.porteTop + (this.porteLiHe * 4 - height) / 2;
+                                break;
+                        }
+                        translateStr = 't ' + (x - this.porteLiHe / 2) + ' ' + tTop;
+                        mParams.ghostNote.symbol.transform(translateStr + ' ' + scaleStr);
+
+                        mParams.ghostNote.symbol.attr({
+                            fill: this.ghostColor
+                        });
                         break;
                     case 'loc':
                         scaleFactor = this.porteLiHe / 4.75;
                         scaleStr = 's' + scaleFactor + ' 0 0';
-                        let width, height, tTop;
 
                         switch (mParams.loc) {
                             case 'repL':
@@ -1328,97 +1319,82 @@
                         mParams.ghostNote.symbol.attr({
                             fill: this.ghostColor
                         });
-                        this.ghostsVisible = true;
                         break;
                     default:
                         break;
                 }
+                this.ghostsVisible = true;
             } else {
-                switch (mParams.type) {
-                    case 'note':
-                        if (this.ghostsVisible) {
-                            this.guideGroup.attr({
-                                stroke: 'transparent'
-                            });
-                            mParams.ghostNote.symbol.attr({
-                                fill: 'transparent'
-                            });
-                            mParams.ghostNote.symbolR.attr({
-                                fill: 'transparent'
-                            });
-                            if (mParams.dot) {
-                                mParams.ghostNote.symbolDot.attr({
-                                    fill: 'transparent',
-                                    cx: -1,
-                                    cy: -1
-                                });
-                            }
-                        }
-                        this.ghostsVisible = false;
-                        break;
-                    case 'rest':
-                        if (this.ghostsVisible) {
-                            mParams.ghostNote.symbol.attr({
-                                fill: 'transparent'
+                if (this.ghostsVisible) {
+                    mParams.ghostNote.symbol.attr({
+                        fill: 'transparent'
+                    });
+                    if (mParams.type === 'note') {
+                        this.guideGroup.attr({
+                            stroke: 'transparent'
+                        });
+                        mParams.ghostNote.symbolR.attr({
+                            fill: 'transparent'
+                        });
+                        if (mParams.dot) {
+                            mParams.ghostNote.symbolDot.attr({
+                                fill: 'transparent',
+                                cx: -1,
+                                cy: -1
                             });
                         }
-                        this.ghostsVisible = false;
-                        break;
-                    case 'loc':
-                        if (this.ghostsVisible) {
-                            mParams.ghostNote.symbol.attr({
-                                fill: 'transparent'
-                            });
-                        }
-                        this.ghostsVisible = false;
-                        break;
-                    default:
-                        break;
+                    }
+                    this.ghostsVisible = false;
                 }
             }
         };
 
         this.mouseClick = function (x, y) {
             if ((x >= this.box.left) && (x <= this.box.right) && (y >= this.box.top) && (y <= this.box.bottom)) {
+                console.log('click');
                 let i, note;
                 switch (mParams.type) {
                     case 'note':
-                        if (mParams.duration) {
-                            let snapPos = this.allYPos[0];
-                            let min = this.porteLiHe * 100;
-                            for (let i = 0; i < this.allYPos.length; i++) {
-                                let diff = Math.abs(y - this.allYPos[i]);
-                                if (diff < min) {
-                                    snapPos = i;
-                                    min = diff;
-                                }
+                        let snapPos = this.allYPos[0];
+                        let min = this.porteLiHe * 100;
+                        for (let i = 0; i < this.allYPos.length; i++) {
+                            let diff = Math.abs(y - this.allYPos[i]);
+                            if (diff < min) {
+                                snapPos = i;
+                                min = diff;
                             }
-                            snapPos = (snapPos - 10) / 2;
-                            let noteRoot = notePositionsRev[snapPos + ''];
-                            let noteAcci = mParams.acci ? mParams.acci : '';
-                            let isDotted = mParams.dot;
-                            let durDen = parseInt(mParams.duration.replace('n', ''));
-                            let durNum = isDotted ? 3 : 1;
-                            durDen = isDotted ? durDen * 2 : durDen;
-                            let fullDur = durNum + '/' + durDen;
-                            i = 0;
-                            for (let nl of this.noteLefts) {
-                                if (nl < x) {
-                                    i++;
-                                } else {
-                                    break;
-                                }
-                            }
-                            let cAcci = this.getReqAccidentalAtPos(noteRoot, noteAcci, i);
-                            cAcci = cAcci.replace('d', '#');
-                            let fullPitch = noteRoot + cAcci;
-                            note = new Note(fullPitch, fullDur);
-                            this.notes.splice(i, 0, note);
-                            if (this.needsEnlargement()) {
-                                this.parentSatir.redrawSatir();
+                        }
+                        snapPos = (snapPos - 10) / 2;
+                        let noteRoot = notePositionsRev[snapPos + ''];
+                        let noteAcci = mParams.acci ? mParams.acci : '';
+                        let isDotted = mParams.dot;
+                        let durDen = parseInt(mParams.duration.replace('n', ''));
+                        let durNum = isDotted ? 3 : 1;
+                        durDen = isDotted ? durDen * 2 : durDen;
+                        let fullDur = durNum + '/' + durDen;
+                        i = 0;
+                        for (let nl of this.noteLefts) {
+                            if (nl < x) {
+                                i++;
                             } else {
-                                this.drawMeasure(true);
+                                break;
                             }
+                        }
+                        let cAcci = this.getReqAccidentalAtPos(noteRoot, noteAcci, i);
+                        cAcci = cAcci.replace('d', '#');
+                        let fullPitch = noteRoot + cAcci;
+                        note = new Note(fullPitch, fullDur);
+                        this.notes.splice(i, 0, note);
+                        if (this.needsEnlargement()) {
+                            let start = new Date();
+                            this.parentSatir.redrawSatir();
+                            let end = new Date();
+                            console.log('redraw', end - start);
+                        } else {
+                            let start = new Date();
+                            this.drawMeasure(true);
+                            let end = new Date();
+                            console.log('draw', end - start);
                         }
                         break;
                     case 'rest':
