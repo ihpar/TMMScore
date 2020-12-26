@@ -1022,6 +1022,10 @@
             return (total + epsilon) >= (this.meter.num / this.meter.den);
         };
 
+        this.isMeasureEmpty = function () {
+            return (this.notes.length === 0);
+        };
+
         this.getCompressedWidth = function (recalculate) {
             let compressedWidth = 0;
             if (recalculate) {
@@ -1630,6 +1634,7 @@
             let fittedMeasures = [];
             let unfittedMeasures = [];
             let remWid = 0;
+            let areExcessMeasuresEmpty = true;
             for (let measure of this.measures) {
                 measure.eraseMeasure();
                 this.remainingWidth -= measure.getIdealWidth();
@@ -1637,17 +1642,26 @@
                     fittedMeasures.push(measure);
                     remWid = this.remainingWidth;
                 } else {
-                    unfittedMeasures.push(measure);
+                    if (!measure.isMeasureEmpty()) {
+                        areExcessMeasuresEmpty = false;
+                        unfittedMeasures.push(measure); // TODO: fix
+                    }
                 }
             }
             this.remainingWidth = remWid;
             this.measures = fittedMeasures;
 
             this.drawSatir();
-            this.parentScore.handleExcessMeasures(unfittedMeasures, this.satirNo);
+            if (!areExcessMeasuresEmpty || !this.measures.slice(-1)[0].isMeasureEmpty()) {
+                this.parentScore.handleExcessMeasures(unfittedMeasures, this.satirNo);
+            }
         };
 
         this.prependExcessMeasures = function (measures) {
+            let sParams = this.getMWParams();
+            for (let measure of measures) {
+                measure.setSParams(sParams);
+            }
             this.measures = [...measures, ...this.measures];
             this.redrawSatir();
         };
@@ -1763,17 +1777,22 @@
         this.handleExcessMeasures = function (measures, senderSatirNo) {
             let nextSatirNo = senderSatirNo + 1;
             if (nextSatirNo < satirlar.length) {
+                console.log('prepend to', nextSatirNo, measures);
                 satirlar[nextSatirNo].prependExcessMeasures(measures);
             } else {
+                console.log('new satir', nextSatirNo, measures);
                 numOfReqLines += 1;
                 offsetTop += 17 * configs.porteLineHeight;
                 satirNo += 1;
                 svgElem.style.height = (configs.padding.top + configs.padding.bottom) + (numOfReqLines * 17 * configs.porteLineHeight) + 'px';
                 let satir = new SatirObject(nextSatirNo, paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0], this);
                 for (let m of measures) {
-                    if (satir.acceptsMeasure(m)) {
-                        satir.addMeasure(m);
-                    }
+                    satir.addMeasure(m);
+                }
+                let measure = new Measure();
+                while (satir.acceptsMeasure(measure)) {
+                    satir.addMeasure(measure);
+                    measure = new Measure();
                 }
                 satirlar.push(satir);
                 satir.drawSatir();
