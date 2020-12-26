@@ -620,6 +620,7 @@
         this.noteOctave = 0;
         this.noteComma = '';
         this.durStr = duration;
+        this.origDurStr = duration;
         let durParts = this.durStr.split('/');
         this.durNum = parseInt(durParts[0]);
         this.durDen = parseInt(durParts[1]);
@@ -868,9 +869,7 @@
         };
 
         this.toNoteStr = function () {
-            let s = this.noteRoot;
-            s +=
-            return s;
+            return this.getNote() + this.origDurStr;
         };
     }
 
@@ -1024,7 +1023,6 @@
         };
 
         this.getCompressedWidth = function (recalculate) {
-            let start = new Date();
             let compressedWidth = 0;
             if (recalculate) {
                 let color = 'transparent';
@@ -1035,17 +1033,21 @@
 
                 for (let note of this.notes) {
                     let acci = this.getReqAccidental(note, accidentals);
-                    console.log('acci', acci);
-                    let noteG = note.drawNote(this.sParams.paper, this.porteLiHe, lThickness, left, top, color, lColor, acci);
-                    compressedWidth += noteG.getBBox().width;
-                    noteG.remove();
+                    let noteKey = note.toNoteStr() + acci;
+                    if (noteKey in cNoteWidths) {
+                        compressedWidth += cNoteWidths[noteKey];
+                    } else {
+                        let noteG = note.drawNote(this.sParams.paper, this.porteLiHe, lThickness, left, top, color, lColor, acci);
+                        let wid = noteG.getBBox().width;
+                        compressedWidth += wid;
+                        cNoteWidths[noteKey] = wid;
+                        noteG.remove();
+                    }
                 }
                 this.compressedWidth = compressedWidth;
             } else {
                 compressedWidth = this.compressedWidth;
             }
-            let end = new Date();
-            console.log('getCompressedWidth', end - start);
             return compressedWidth;
         };
 
@@ -1351,7 +1353,6 @@
 
         this.mouseClick = function (x, y) {
             if ((x >= this.box.left) && (x <= this.box.right) && (y >= this.box.top) && (y <= this.box.bottom)) {
-                console.log('click');
                 let i, note;
                 switch (mParams.type) {
                     case 'note':
@@ -1386,15 +1387,9 @@
                         note = new Note(fullPitch, fullDur);
                         this.notes.splice(i, 0, note);
                         if (this.needsEnlargement()) {
-                            let start = new Date();
                             this.parentSatir.redrawSatir();
-                            let end = new Date();
-                            console.log('redraw', end - start);
                         } else {
-                            let start = new Date();
                             this.drawMeasure(true);
-                            let end = new Date();
-                            console.log('draw', end - start);
                         }
                         break;
                     case 'rest':
@@ -1649,7 +1644,12 @@
             this.measures = fittedMeasures;
 
             this.drawSatir();
-            this.parentScore.prependUnfittedMeasures(unfittedMeasures, this.satirNo);
+            this.parentScore.handleExcessMeasures(unfittedMeasures, this.satirNo);
+        };
+
+        this.prependExcessMeasures = function (measures) {
+            this.measures = [...measures, ...this.measures];
+            this.redrawSatir();
         };
 
         this.handleMouse = function (x, y) {
@@ -1723,6 +1723,14 @@
         let timeSignatures = [];
         let accidentals = [];
 
+        let pLeft = configs.padding.left;
+        let pRight = configs.padding.right;
+        let pTop = configs.padding.top;
+        let satirWidth = scorePaperWidth - pLeft - pRight;
+        let numOfReqLines = 1;
+        let satirNo = 0;
+        let offsetTop = pTop + (6 * configs.porteLineHeight);
+
         this.setAccidentals = function (accidentalsArr) {
             let acci = {
                 notes: [],
@@ -1752,25 +1760,33 @@
             measures.push(measure);
         };
 
-        this.prependUnfittedMeasures = function (measures, senderSatirNo) {
-            console.log('prepend', senderSatirNo, measures);
+        this.handleExcessMeasures = function (measures, senderSatirNo) {
+            let nextSatirNo = senderSatirNo + 1;
+            if (nextSatirNo < satirlar.length) {
+                satirlar[nextSatirNo].prependExcessMeasures(measures);
+            } else {
+                numOfReqLines += 1;
+                offsetTop += 17 * configs.porteLineHeight;
+                satirNo += 1;
+                svgElem.style.height = (configs.padding.top + configs.padding.bottom) + (numOfReqLines * 17 * configs.porteLineHeight) + 'px';
+                let satir = new SatirObject(nextSatirNo, paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0], this);
+                for (let m of measures) {
+                    if (satir.acceptsMeasure(m)) {
+                        satir.addMeasure(m);
+                    }
+                }
+                satirlar.push(satir);
+                satir.drawSatir();
+            }
         };
 
         this.initScore = function () {
             // create satir objects
-            let pLeft = configs.padding.left;
-            let pRight = configs.padding.right;
-            let pTop = configs.padding.top;
-            let satirWidth = scorePaperWidth - pLeft - pRight;
-            let numOfReqLines = 1;
-            let satirNo = 0;
-
             if (measures.length === 0) {
                 measures.push(new Measure());
             }
 
             // draw existing measures
-            let offsetTop = pTop + (6 * configs.porteLineHeight);
             let satir = new SatirObject(satirNo, paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0], this);
             satirNo += 1;
             satirlar.push(satir);
@@ -1796,6 +1812,7 @@
             numOfReqLines += 1;
             offsetTop += 17 * configs.porteLineHeight;
             satir = new SatirObject(satirNo, paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0], this);
+            satirNo += 1;
             satirlar.push(satir);
             measure = new Measure();
             while (satir.acceptsMeasure(measure)) {
