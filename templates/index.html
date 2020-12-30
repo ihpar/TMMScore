@@ -202,6 +202,14 @@
         sender.parentNode.parentNode.blur();
         mParams.makam.name = selectedMakam;
         mParams.makam.accidentals = accidentals.slice();
+        tmmScore.changeMakam(selectedMakam, accidentals.slice());
+        let targetUsul;
+        if (selectedMakam === 'Hicaz') {
+            targetUsul = 'Aksak';
+        } else {
+            targetUsul = 'Düyek';
+        }
+        
     }
 
     function usulMenuItemClick(e) {
@@ -214,6 +222,7 @@
         sender.parentNode.parentNode.blur();
         mParams.usul.name = usul;
         mParams.usul.meter = meter.slice();
+        tmmScore.changeMeter(usul, meter);
     }
 
     function tmmMenuButtonClick(e, paper) {
@@ -409,21 +418,8 @@
     function createTMMMenu(containerSelector, paper) {
         let tabIndex = 1;
         let tmmMakams = [
-            {name: "Do Majör", accidentals: []},
-            {name: "Acemaşîran", accidentals: ['B4b5']},
-            {name: "Acemkürdî", accidentals: ['B4b5']},
-            {name: "Bestenigâr", accidentals: ['B4b1', 'D5b4']},
-            {name: "Beyâtî", accidentals: ['B4b1']},
-            {name: "Bûselik", accidentals: []},
-            {name: "Ferahfeza", accidentals: ['B4b1', 'F5#4']},
             {name: "Hicaz", accidentals: ['B4b4', 'F5#4', 'C5#4']},
-            {name: "Hüseynî", accidentals: ['B4b1', 'F5#4']},
-            {name: "Kürdî", accidentals: ['B4b5']},
-            {name: "Muhayyer", accidentals: ['B4b1', 'F5#4']},
-            {name: "Nihâvent", accidentals: ['B4b5', 'E5b5']},
-            {name: "Rast", accidentals: ['B4b1', 'F5#4']},
-            {name: "Segâh", accidentals: ['B4b1', 'E5b1', 'F5#4']},
-            {name: "Uşşak", accidentals: ['B4b1']}
+            {name: "Nihâvent", accidentals: ['B4b5', 'E5b5']}
         ];
 
         let scoreMenu = document.createElement('div');
@@ -435,7 +431,6 @@
 
         let makamInput = document.createElement('div');
         makamInput.tabIndex = tabIndex;
-        tabIndex += 1;
         makamInput.className = 'tmm-menu-btn-no';
         makamInput.innerHTML = '<span id="selectedMakamName">Hicaz</span>';
         makamInput.style.position = 'relative';
@@ -453,30 +448,13 @@
         makamInput.appendChild(ddMakam);
 
         let tmmUsuls = [
-            {name: "Nîmsofyan", meter: [2, 4]},
-            {name: "Yürüksofyan", meter: [2, 4]},
-            {name: "Semâî", meter: [3, 4]},
-            {name: "Sofyan", meter: [4, 4]},
-            {name: "Türkaksağı", meter: [5, 8]},
-            {name: "Yürüksemâî", meter: [6, 8]},
-            {name: "Senginsemâî", meter: [6, 4]},
-            {name: "Devr-i Hindî", meter: [7, 8]},
-            {name: "Düyek", meter: [8, 8]},
             {name: "Aksak", meter: [9, 8]},
-            {name: "Ağıraksak", meter: [9, 4]},
-            {name: "Curcuna", meter: [10, 8]},
-            {name: "Lenk Fahte", meter: [10, 4]},
-            {name: "Dolap", meter: [12, 8]},
-            {name: "Çenber", meter: [24, 4]},
-            {name: "Devr-i Kebîr", meter: [28, 4]},
-            {name: "Hafif", meter: [32, 8]},
-            {name: "Hâvî", meter: [64, 4]},
-            {name: "Darb-i Fetih", meter: [88, 4]},
-            {name: "Çar", meter: [124, 4]}
+            {name: "Düyek", meter: [8, 8]}
         ];
 
         let meterInput = document.createElement('div');
         meterInput.className = 'tmm-menu-btn-no';
+        tabIndex += 1;
         meterInput.tabIndex = tabIndex;
         meterInput.innerHTML = '<div id="selectedUsulWrapper">' +
             '<span class="usulNum" id="selectedUsulNum">9</span>' +
@@ -578,6 +556,7 @@
             dvGroupRests.appendChild(btn);
         }
 
+        /*
         let dvGroupLocs = document.createElement('div');
         dvGroupLocs.className = 'btn-group';
 
@@ -597,12 +576,24 @@
             btn.innerHTML = '<img alt="' + loc.val + '" src="static/img/' + loc.img + '">';
             dvGroupLocs.appendChild(btn);
         }
+        */
+        let dvUIBtns = document.createElement('div');
+        dvUIBtns.className = 'btn-group';
+
+        let toServerBtn = document.createElement('div');
+        tabIndex += 1;
+        toServerBtn.tabIndex = tabIndex;
+        toServerBtn.className = 'tmm-menu-btn-no';
+        toServerBtn.innerHTML = '<span class="spn-button-text">Bestele!</span>';
+
+        dvUIBtns.appendChild(toServerBtn);
 
         scoreMenu.appendChild(dvGroupGlobals);
         scoreMenu.appendChild(dvGroupAcc);
         scoreMenu.appendChild(dvGroupDurs);
         scoreMenu.appendChild(dvGroupRests);
-        scoreMenu.appendChild(dvGroupLocs);
+        scoreMenu.appendChild(dvUIBtns);
+        // scoreMenu.appendChild(dvGroupLocs);
 
         document.querySelector(containerSelector).prepend(scoreMenu);
 
@@ -1760,6 +1751,10 @@
             accidentals.push(acci);
         };
 
+        this.changeMakam = function (makamName, accidentals) {
+            console.log(makamName, accidentals);
+        };
+
         this.setMeter = function (meter) {
             let parts = meter.split('/');
             let timeSignature = {
@@ -1768,6 +1763,10 @@
                 startsAt: measures.length
             };
             timeSignatures.push(timeSignature);
+        };
+
+        this.changeMeter = function (meterName, timeSig) {
+            console.log(meterName, timeSig);
         };
 
         this.addMeasure = function (measure) {
@@ -1827,18 +1826,6 @@
                 measure = new Measure();
             }
 
-            // add a blank line
-            numOfReqLines += 1;
-            offsetTop += 17 * configs.porteLineHeight;
-            satir = new SatirObject(satirNo, paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0], this);
-            satirNo += 1;
-            satirlar.push(satir);
-            measure = new Measure();
-            while (satir.acceptsMeasure(measure)) {
-                satir.addMeasure(measure);
-                measure = new Measure();
-            }
-
             svgElem.style.height = (configs.padding.top + configs.padding.bottom) + (numOfReqLines * 17 * configs.porteLineHeight) + 'px';
             // eof satir objects
         };
@@ -1884,83 +1871,11 @@
         };
     }
 
-    (function allEry() {
-        let tmmScore = new TmmScore('#dv-tmm-wrapper');
+    let tmmScore = new TmmScore('#dv-tmm-wrapper');
 
-        tmmScore.setAccidentals(['B4b4', 'F5#4', 'C5#4']);
-        tmmScore.setMeter('9/8');
-
-
-        let measure = new Measure();
-        measure.addNote('Rest', '1/8');
-        measure.addNote('La4', '1/8');
-        measure.addNote('Si4b4', '1/4');
-        measure.addNote('Re5', '3/16');
-        measure.addNote('Do5#4', '1/16');
-        measure.addNote('Si4b4', '1/4');
-        measure.addNote('Do5#4', '1/8');
-        tmmScore.addMeasure(measure);
-
-        measure = new Measure();
-        /*
-        measure.addNote('Rest', '1/32');
-        measure.addNote('Rest', '1/16');
-        measure.addNote('Rest', '1/8');
-        measure.addNote('Rest', '1/4');
-        measure.addNote('Rest', '1/2');
-        measure.addNote('Rest', '1/1');
-        */
-        measure.addNote('Fa5', '1/8');
-        tmmScore.addMeasure(measure);
-        /*
-        measure = new Measure();
-        measure.addNote('Do3#4', '1/4');
-        measure.addNote('Re3#1', '1/32');
-        measure.addNote('Mi3#8', '3/8');
-        measure.addNote('Fa5b8', '1/2');
-        measure.addNote('Mi5b5', '1/4');
-        measure.addNote('Re5b4', '1/8');
-        measure.addNote('Do5#4', '1/16');
-
-        tmmScore.addMeasure(measure);
-
-        measure = new Measure();
-        measure.addNote('Do5#4', '1/16');
-        measure.addNote('Re5', '1/32');
-        measure.addNote('Mi5', '1/16');
-        measure.addNote('Re5', '1/8');
-        measure.addNote('Do5#4', '1/4');
-        measure.addNote('Rest', '1/4');
-        measure.addNote('Si4b4', '1/1');
-        measure.addNote('La4', '1/16');
-        measure.addNote('La4', '1/4');
-
-        tmmScore.addMeasure(measure);
-
-        measure = new Measure();
-        measure.addNote('Do5#4', '1/16');
-        measure.addNote('Si4b4', '1/8');
-        measure.addNote('La5', '1/8');
-        measure.addNote('Si5b4', '1/4');
-        measure.addNote('La5', '1/4');
-        measure.addNote('Sol5', '1/2');
-        measure.addNote('Fa5', '1/4');
-        measure.addNote('Mi5', '1/16');
-        measure.addNote('Re5', '1/16');
-        measure.addNote('Do5#4', '1/16');
-
-        tmmScore.addMeasure(measure);
-
-        measure = new Measure();
-        measure.addNote('Fa5', '1/2');
-        measure.addNote('Mi5', '1/4');
-        measure.addNote('Re5', '1/8');
-        measure.addNote('Do5#4', '1/16');
-
-        tmmScore.addMeasure(measure);
-        */
-        tmmScore.drawScore();
-    })();
+    tmmScore.setAccidentals(['B4b4', 'F5#4', 'C5#4']);
+    tmmScore.setMeter('9/8');
+    tmmScore.drawScore();
 
 </script>
 </body>

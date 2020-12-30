@@ -163,7 +163,8 @@ body ::-webkit-scrollbar-thumb:hover {
     box-shadow: 0 0 20px -8px #111;
     z-index: 3;
     margin-top: -3em;
-    overflow-y: scroll;
+    overflow: hidden;
+    /*overflow-y: scroll;*/
     height: 0;
     opacity: 0;
     width: max-content;
@@ -171,7 +172,8 @@ body ::-webkit-scrollbar-thumb:hover {
 }
 
 .tmm-menu-btn-no:focus .ddTmmList {
-    height: 10em;
+    /*height: 10em;*/
+    height: 4em;
     opacity: 1;
 }
 
@@ -185,10 +187,10 @@ body ::-webkit-scrollbar-thumb:hover {
 }
 
 .ddTmmItem:not(:last-child) {
-    border-bottom: 1px solid #EFE3D5;
+    /*border-bottom: 1px solid #EFE3D5;*/
 }
 
-#selectedMakamName, #selectedUsulWrapper {
+#selectedMakamName, #selectedUsulWrapper, .spn-button-text {
     width: 6em;
     white-space: nowrap;
     overflow: hidden;
