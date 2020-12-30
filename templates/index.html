@@ -194,35 +194,56 @@
 
     let cNoteWidths = {};
 
+    function setMakam(makam, accidentals) {
+        document.getElementById('selectedMakamName').innerHTML = makam;
+        mParams.makam.name = makam;
+        mParams.makam.accidentals = accidentals.slice();
+    }
+
     function makamMenuItemClick(e) {
         let sender = e.currentTarget;
         let selectedMakam = sender.innerHTML;
-        let accidentals = JSON.parse(sender.getAttribute('data-accidentals'));
-        document.getElementById('selectedMakamName').innerHTML = selectedMakam;
-        sender.parentNode.parentNode.blur();
-        mParams.makam.name = selectedMakam;
-        mParams.makam.accidentals = accidentals.slice();
-        tmmScore.changeMakam(selectedMakam, accidentals.slice());
-        let targetUsul;
-        if (selectedMakam === 'Hicaz') {
-            targetUsul = 'Aksak';
-        } else {
-            targetUsul = 'Düyek';
+        if (mParams.makam.name !== selectedMakam) {
+            let accidentals = JSON.parse(sender.getAttribute('data-accidentals'));
+            setMakam(selectedMakam, accidentals);
+            let usul = 'Aksak';
+            let meter = [9, 8];
+            if (selectedMakam === 'Nihâvent') {
+                usul = 'Düyek';
+                meter = [8, 8];
+            }
+            setUsul(usul, meter);
+            tmmScore.changeScoreMakamAndMeter(selectedMakam, accidentals, usul, meter);
         }
-        
+        sender.parentNode.parentNode.blur();
+    }
+
+    function setUsul(usuName, meter) {
+        document.getElementById('selectedUsulNum').innerHTML = meter[0];
+        document.getElementById('selectedUsulDen').innerHTML = meter[1];
+        document.getElementById('selectedUsulName').innerHTML = usuName;
+        mParams.usul.name = usuName;
+        mParams.usul.meter = meter.slice();
     }
 
     function usulMenuItemClick(e) {
         let sender = e.currentTarget;
         let meter = JSON.parse(sender.getAttribute('data-meter'));
         let usul = JSON.parse(sender.getAttribute('data-usul'));
-        document.getElementById('selectedUsulNum').innerHTML = meter[0];
-        document.getElementById('selectedUsulDen').innerHTML = meter[1];
-        document.getElementById('selectedUsulName').innerHTML = usul;
+        if (mParams.usul.name !== usul) {
+            setUsul(usul, meter);
+            let makam, accidentals;
+            if (usul === 'Aksak') {
+                makam = 'Hicaz';
+                accidentals = ['B4b4', 'F5#4', 'C5#4'];
+            } else {
+                makam = 'Nihâvent';
+                accidentals = ['B4b5', 'E5b5'];
+            }
+            setMakam(makam, accidentals);
+            tmmScore.changeScoreMakamAndMeter(makam, accidentals, usul, meter);
+        }
         sender.parentNode.parentNode.blur();
-        mParams.usul.name = usul;
-        mParams.usul.meter = meter.slice();
-        tmmScore.changeMeter(usul, meter);
     }
 
     function tmmMenuButtonClick(e, paper) {
@@ -1443,7 +1464,7 @@
 
         this.getMWParams = function () {
             let acci = {};
-            for (let note of this.accidentals.notes) {
+            for (let note of this.accidentals) {
                 let name = noteNameDict[note.noteRoot];
                 acci[name] = note.noteComma;
             }
@@ -1456,29 +1477,6 @@
                 accidentals: acci,
                 parentSatir: this
             };
-        };
-
-        this.acceptsMeasure = function (measure) {
-            let sParams = this.getMWParams();
-            measure.setSParams(sParams);
-            if (this.measures.length === 0) {
-                // if this is the first measure always accept
-                return true;
-            }
-            return (this.remainingWidth >= measure.getIdealWidth());
-        };
-
-        this.distributeWidth = function (remWid) {
-            let widths = [];
-            let total = 0;
-            for (let measure of this.measures) {
-                let w = measure.getIdealWidth();
-                widths.push(w);
-                total += w;
-            }
-            for (let i = 0; i < widths.length; i++) {
-                this.measures[i].setWidthDiff((widths[i] / total) * remWid);
-            }
         };
 
         this.addMeasure = function (measure) {
@@ -1536,8 +1534,8 @@
             let lastAccWidth = 0;
             this.accidentalsGroup = this.paper.g();
 
-            for (let i = 0; i < accidentals.notes.length; i++) {
-                let note = accidentals.notes[i];
+            for (let i = 0; i < accidentals.length; i++) {
+                let note = accidentals[i];
                 let notePos = notePositions[note.getNote()];
 
                 let accPath = symbols[note.getAcc()];
@@ -1605,8 +1603,6 @@
         };
 
         this.drawSatir = function () {
-            this.distributeWidth(this.remainingWidth);
-
             let sParams = this.getMWParams();
             let leftOffset = leftUsablePos;
 
@@ -1722,11 +1718,9 @@
 
         createTMMMenu(containerSelector, paper);
         // eof prep work
-
-        let measures = [];
         let satirlar = [];
-        let timeSignatures = [];
-        let accidentals = [];
+        let globMeter = {};
+        let globAccidentals = [];
 
         let pLeft = configs.padding.left;
         let pRight = configs.padding.right;
@@ -1737,94 +1731,29 @@
         let offsetTop = pTop + (6 * configs.porteLineHeight);
 
         this.setAccidentals = function (accidentalsArr) {
-            let acci = {
-                notes: [],
-                startsAt: 0
-            };
-
             for (let accidental of accidentalsArr) {
                 let note = new Note(accidental, '1/1');
-                acci.notes.push(note);
+                globAccidentals.push(note);
             }
-
-            acci.startsAt = measures.length;
-            accidentals.push(acci);
-        };
-
-        this.changeMakam = function (makamName, accidentals) {
-            console.log(makamName, accidentals);
         };
 
         this.setMeter = function (meter) {
             let parts = meter.split('/');
-            let timeSignature = {
+            globMeter = {
                 num: parseInt(parts[0]),
-                den: parseInt(parts[1]),
-                startsAt: measures.length
+                den: parseInt(parts[1])
             };
-            timeSignatures.push(timeSignature);
         };
 
-        this.changeMeter = function (meterName, timeSig) {
-            console.log(meterName, timeSig);
-        };
-
-        this.addMeasure = function (measure) {
-            measures.push(measure);
-        };
-
-        this.handleExcessMeasures = function (measures, senderSatirNo) {
-            let nextSatirNo = senderSatirNo + 1;
-            if (nextSatirNo < satirlar.length) {
-                console.log('prepend to', nextSatirNo, measures);
-                satirlar[nextSatirNo].prependExcessMeasures(measures);
-            } else {
-                console.log('new satir', nextSatirNo, measures);
-                numOfReqLines += 1;
-                offsetTop += 17 * configs.porteLineHeight;
-                satirNo += 1;
-                svgElem.style.height = (configs.padding.top + configs.padding.bottom) + (numOfReqLines * 17 * configs.porteLineHeight) + 'px';
-                let satir = new SatirObject(nextSatirNo, paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0], this);
-                for (let m of measures) {
-                    satir.addMeasure(m);
-                }
-                let measure = new Measure();
-                while (satir.acceptsMeasure(measure)) {
-                    satir.addMeasure(measure);
-                    measure = new Measure();
-                }
-                satirlar.push(satir);
-                satir.drawSatir();
-            }
+        this.changeScoreMakamAndMeter = function (makam, accidentals, usul, meter) {
+            console.log(makam, accidentals, usul, meter);
         };
 
         this.initScore = function () {
             // create satir objects
-            if (measures.length === 0) {
-                measures.push(new Measure());
-            }
-
-            // draw existing measures
-            let satir = new SatirObject(satirNo, paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0], this);
-            satirNo += 1;
+            let satir = new SatirObject(satirNo, paper, configs, pLeft, offsetTop, satirWidth, globAccidentals, globMeter, this);
+            satir.addMeasure(new Measure());
             satirlar.push(satir);
-            for (let measure of measures) {
-                if (!satir.acceptsMeasure(measure)) {
-                    numOfReqLines += 1;
-                    offsetTop += 17 * configs.porteLineHeight;
-                    satir = new SatirObject(satirNo, paper, configs, pLeft, offsetTop, satirWidth, accidentals[0], timeSignatures[0], this);
-                    satirNo += 1;
-                    satirlar.push(satir);
-                }
-                satir.addMeasure(measure);
-            }
-
-            // complete last line
-            let measure = new Measure();
-            while (satir.acceptsMeasure(measure)) {
-                satir.addMeasure(measure);
-                measure = new Measure();
-            }
 
             svgElem.style.height = (configs.padding.top + configs.padding.bottom) + (numOfReqLines * 17 * configs.porteLineHeight) + 'px';
             // eof satir objects
@@ -1872,9 +1801,10 @@
     }
 
     let tmmScore = new TmmScore('#dv-tmm-wrapper');
-
     tmmScore.setAccidentals(['B4b4', 'F5#4', 'C5#4']);
     tmmScore.setMeter('9/8');
+    setMakam('Hicaz', ['B4b4', 'F5#4', 'C5#4']);
+    setUsul('Aksak', [9, 8]);
     tmmScore.drawScore();
 
 </script>
