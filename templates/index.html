@@ -117,16 +117,6 @@
         "-5": "si6"
     };
 
-    const noteNameDict = {
-        c: "do",
-        d: "re",
-        e: "mi",
-        f: "fa",
-        g: "sol",
-        a: "la",
-        b: "si"
-    };
-
     const symbols = {
         b8: "M 0,0.33443646 M 0.0072,-3.1402835 v 0.535686 c 0,0.04343 0.02172,0.07963 0.07963,0.07963 0.01447,0 0.463296,-0.166497 0.485013,-0.173736 0.05067,0 0.07239,0.02896 0.07239,0.05067 0,0.09411 0,0.188214 0.01447,0.260604 0,0.08687 -0.01447,0.108585 -0.06515,0.123063 -0.04343,0.02172 -0.477774,0.202692 -0.477774,0.202692 -0.07239,0 -0.108585,0.02172 -0.108585,0.07239 v 0.528447 c 0,0.04343 0.02172,0.08687 0.08687,0.08687 0.02172,0 0.419862,-0.159258 0.477774,-0.188214 0.07239,0 0.09411,0.04343 0.09411,0.07963 0.02172,1.65049196 0.06515,3.5253929 0.108585,3.5688269 0.02896,0.05067 0.05791,0.06515 0.09411,0.06515 0.02896,0 0.05791,-0.02172 0.05791,-0.02172 0.311277,-0.166497 0.571881,-0.463296 0.810768,-0.637032 0.919353,-0.64427097 1.252347,-1.27406394 1.252347,-1.76631593 0,-0.59359797 -0.456057,-0.95554797 -0.933831,-0.98450397 -0.180975,0 -0.398145,0.07963 -0.557403,0.173736 -0.07963,0.04343 -0.166497,0.14478 -0.260604,0.14478 -0.0072,0 -0.02172,-0.0072 -0.02896,-0.0072 -0.07239,-0.02896 -0.115824,-0.108585 -0.115824,-0.188214 0,-0.05067 0,-0.238887 0.01447,-0.477774 0,-0.04343 0,-0.14478 0.07239,-0.166497 0.07239,-0.03619 1.469517,-0.542925 1.469517,-0.542925 0.05791,-0.02172 0.09411,-0.06515 0.09411,-0.115824 v -0.4994909 c 0,-0.04343 -0.01447,-0.08687 -0.06515,-0.08687 -0.02896,0 -1.4478,0.521208 -1.491234,0.542925 -0.0073,0 -0.05791,-0.02896 -0.05791,-0.05067 0.0072,-0.09411 0.0072,-0.231648 0.0072,-0.28956 0,-0.06515 0.02896,-0.09411 0.07239,-0.115824 0.04343,-0.02172 1.440561,-0.5356861 1.440561,-0.5356861 0.05791,-0.01448 0.09411,-0.05791 0.09411,-0.101346 v -0.513969 c 0,-0.0362 -0.01447,-0.07963 -0.06515,-0.07963 -0.02896,0 -1.418844,0.50673 -1.4478,0.521208 -0.05067,0 -0.07239,-0.02896 -0.07239,-0.05067 0,-0.202692 0.0072,-0.325755 0.0072,-0.369189 0,-0.115824 -0.09411,-0.166497 -0.195453,-0.166497 -0.14478,0 -0.311277,0.108585 -0.325755,0.296799 v 0.448818 c 0,0.01448 -0.0072,0.07239 -0.05791,0.07963 -0.03619,0.02172 -0.470535,0.188214 -0.470535,0.188214 -0.07239,0.0072 -0.108585,0.04343 -0.108585,0.07963 m 1.107567,2.94627299 c 0.04343,-0.137541 0.311277,-0.369189 0.470535,-0.44881797 0.09411,-0.04343 0.173736,-0.06515 0.260604,-0.06515 0.101346,0 0.195453,0.02896 0.267843,0.101346 0.09411,0.11582397 0.159258,0.28232097 0.159258,0.49225197 0,0.57188097 -0.456057,1.12928391 -0.926592,1.40436591 -0.04343,0.02172 -0.07239,0.03619 -0.09411,0.03619 -0.08687,0 -0.115824,-0.108585 -0.115824,-0.166497 0,0 -0.02896,-0.66598797 -0.02896,-1.07861094 0,-0.130302 0,-0.23888697 0.0072,-0.27508197",
         b5: "M 0,0.17463801 M 0.123063,1.9481929 c 0.03619,0.04343 0.06515,0.05067 0.09411,0.05067 0.03619,0 0.06515,-0.02172 0.06515,-0.02172 0.311277,-0.173736 0.564642,-0.456057 0.825246,-0.637032 0.926592,-0.64427092 1.2451081,-1.28130289 1.2451081,-1.75907686 0,-0.59359794 -0.4560571,-0.97002594 -0.9338311,-0.99898194 -0.180975,0 -0.427101,0.07963 -0.571881,0.1737359 -0.06515,0.05067 -0.180975,0.1447801 -0.231648,0.1447801 -0.02172,0 -0.02896,0 -0.05067,-0.0072 -0.07239,-0.02896 -0.115824,-0.108585 -0.115824,-0.1809749 0.0072,-0.224409 0.07239,-2.7291031 0.07239,-2.9390341 0,-0.115824 -0.09411,-0.173736 -0.195453,-0.173736 -0.152019,0 -0.318516,0.101346 -0.325755,0.28956 0,0 0.04343,5.9504579 0.123063,6.0590429 m 0.354711,-2.30200188 c 0.07239,-0.209931 0.492252,-0.51396897 0.731139,-0.51396897 0.3040381,0 0.427101,0.34747197 0.427101,0.60807597 0,0.55740297 -0.4777739,1.12204491 -0.926592,1.40436588 -0.04343,0.02172 -0.07239,0.02896 -0.101346,0.02896 -0.09411,0 -0.115824,-0.101346 -0.115824,-0.152019 0,0 -0.03619,-0.62979294 -0.03619,-1.04241591 0,-0.166497 0.01447,-0.29679897 0.02172,-0.33299397",
@@ -200,50 +190,12 @@
         mParams.makam.accidentals = accidentals.slice();
     }
 
-    function makamMenuItemClick(e) {
-        let sender = e.currentTarget;
-        let selectedMakam = sender.innerHTML;
-        if (mParams.makam.name !== selectedMakam) {
-            let accidentals = JSON.parse(sender.getAttribute('data-accidentals'));
-            setMakam(selectedMakam, accidentals);
-            let usul = 'Aksak';
-            let meter = [9, 8];
-            if (selectedMakam === 'Nihâvent') {
-                usul = 'Düyek';
-                meter = [8, 8];
-            }
-            setUsul(usul, meter);
-            tmmScore.changeScoreMakamAndMeter(selectedMakam, accidentals, usul, meter);
-        }
-        sender.parentNode.parentNode.blur();
-    }
-
     function setUsul(usuName, meter) {
         document.getElementById('selectedUsulName').innerHTML = usuName;
         document.getElementById('selectedUsulNum').innerHTML = meter[0];
         document.getElementById('selectedUsulDen').innerHTML = meter[1];
         mParams.usul.name = usuName;
         mParams.usul.meter = meter.slice();
-    }
-
-    function usulMenuItemClick(e) {
-        let sender = e.currentTarget;
-        let meter = JSON.parse(sender.getAttribute('data-meter'));
-        let usul = JSON.parse(sender.getAttribute('data-usul'));
-        if (mParams.usul.name !== usul) {
-            setUsul(usul, meter);
-            let makam, accidentals;
-            if (usul === 'Aksak') {
-                makam = 'Hicaz';
-                accidentals = ['B4b4', 'F5#4', 'C5#4'];
-            } else {
-                makam = 'Nihâvent';
-                accidentals = ['B4b5', 'E5b5'];
-            }
-            setMakam(makam, accidentals);
-            tmmScore.changeScoreMakamAndMeter(makam, accidentals, usul, meter);
-        }
-        sender.parentNode.parentNode.blur();
     }
 
     function tmmMenuButtonClick(e, paper) {
@@ -463,7 +415,23 @@
             ddItem.className = 'ddTmmItem';
             ddItem.innerHTML = m.name;
             ddItem.setAttribute('data-accidentals', JSON.stringify(m.accidentals));
-            ddItem.addEventListener('click', makamMenuItemClick);
+            ddItem.addEventListener('click', function (e) {
+                let sender = e.currentTarget;
+                let selectedMakam = sender.innerHTML;
+                if (mParams.makam.name !== selectedMakam) {
+                    let accidentals = JSON.parse(sender.getAttribute('data-accidentals'));
+                    setMakam(selectedMakam, accidentals);
+                    let usul = 'Aksak';
+                    let meter = [9, 8];
+                    if (selectedMakam === 'Nihâvent') {
+                        usul = 'Düyek';
+                        meter = [8, 8];
+                    }
+                    setUsul(usul, meter);
+                    tmmScore.changeScoreMakamAndMeter(selectedMakam, accidentals, usul, meter);
+                }
+                makamInput.blur();
+            });
             ddMakam.appendChild(ddItem);
         }
         makamInput.appendChild(ddMakam);
@@ -498,7 +466,25 @@
                 '<span class="usulName">' + u.name + '</span>';
             ddItem.setAttribute('data-meter', JSON.stringify(u.meter));
             ddItem.setAttribute('data-usul', JSON.stringify(u.name));
-            ddItem.addEventListener('click', usulMenuItemClick);
+            ddItem.addEventListener('click', function (e) {
+                let sender = e.currentTarget;
+                let meter = JSON.parse(sender.getAttribute('data-meter'));
+                let usul = JSON.parse(sender.getAttribute('data-usul'));
+                if (mParams.usul.name !== usul) {
+                    setUsul(usul, meter);
+                    let makam, accidentals;
+                    if (usul === 'Aksak') {
+                        makam = 'Hicaz';
+                        accidentals = ['B4b4', 'F5#4', 'C5#4'];
+                    } else {
+                        makam = 'Nihâvent';
+                        accidentals = ['B4b5', 'E5b5'];
+                    }
+                    setMakam(makam, accidentals);
+                    tmmScore.changeScoreMakamAndMeter(makam, accidentals, usul, meter);
+                }
+                meterInput.blur();
+            });
             ddUsul.appendChild(ddItem);
         }
         meterInput.appendChild(ddUsul);
@@ -892,11 +878,21 @@
         this.paperNotes = [];
         this.parentSatir = null;
         this.paper = null;
+        this.mainGroup = null;
+        this.accidentalsGroup = null;
+        this.meterGroup = null;
         this.guideGroup = null;
         this.notesGroup = null;
         this.mLine = null;
+        this.clefObj = null;
 
-        this.mAccidentals = JSON.parse(JSON.stringify(accidentals));
+        this.mAccJson = {};
+        this.mAccArr = [];
+        for (let accidental of accidentals) {
+            let note = new Note(accidental, '1/1');
+            this.mAccJson[note.noteRoot] = note.noteComma;
+            this.mAccArr.push(note);
+        }
         this.meter = {
             strVer: meter[0] + '/' + meter[1],
             num: meter[0],
@@ -919,6 +915,7 @@
         };
         this.ghostColor = null;
         this.ghostLineColor = null;
+        this.mainColor = null;
         this.ghostsVisible = false;
         this.porteLiHe = 10;
         this.maxSpace = 0;
@@ -928,9 +925,9 @@
         this.noteColor = null;
         this.porteLineColor = null;
 
-        this.drawClef = false;
-        this.drawMeter = false;
-        this.drawGAcci = false;
+        this.clefVisible = false;
+        this.meterVisible = false;
+        this.gAcciVisible = false;
 
         this.setMeasureMeter = function (strMeter) {
             this.meter.strVer = strMeter;
@@ -940,15 +937,15 @@
         };
 
         this.setClefVisibility = function (isVisible) {
-            this.drawClef = isVisible;
+            this.clefVisible = isVisible;
         };
 
         this.setMeterVisibility = function (isVisible) {
-            this.drawMeter = isVisible;
+            this.meterVisible = isVisible;
         };
 
         this.setGAcciVisibility = function (isVisible) {
-            this.drawGAcci = isVisible;
+            this.gAcciVisible = isVisible;
         };
 
         this.addNote = function (pitch, dur) {
@@ -973,6 +970,8 @@
             this.porteLiHe = sp.cfg.porteLineHeight;
             this.lineThickness = sp.cfg.lineThickness;
             this.ghostColor = sp.cfg.ghostColor;
+            this.mainColor = sp.cfg.mainColor;
+
             this.ghostLineColor = sp.cfg.ghostLineColor;
             this.emptyMeasureWidth = sp.cfg.emptyMeasureWidth;
             this.satirEndPos = sp.endPos;
@@ -1004,7 +1003,7 @@
         };
 
         this.getReqAccidentalAtPos = function (noteRoot, forcedAcci, pos) {
-            let accidentals = JSON.parse(JSON.stringify(this.mAccidentals));
+            let accidentals = JSON.parse(JSON.stringify(this.mAccJson));
             let acci;
             for (let i = 0; i < pos; i++) {
                 let eNote = this.notes[i];
@@ -1067,30 +1066,30 @@
         };
 
         this.getCompressedWidth = function (recalculate) {
-            let compressedWidth = 0;
-            if (recalculate) {
-                let color = 'transparent';
-                let lColor = 'transparent';
-                let left = 0, top = 0;
-                let accidentals = JSON.parse(JSON.stringify(this.mAccidentals));
-
-                for (let note of this.notes) {
-                    let acci = this.getReqAccidental(note, accidentals);
-                    let noteKey = note.toNoteStr() + acci;
-                    if (noteKey in cNoteWidths) {
-                        compressedWidth += cNoteWidths[noteKey];
-                    } else {
-                        let noteG = note.drawNote(this.paper, this.porteLiHe, this.lineThickness, left, top, color, lColor, acci);
-                        let wid = noteG.getBBox().width;
-                        compressedWidth += wid;
-                        cNoteWidths[noteKey] = wid;
-                        noteG.remove();
-                    }
-                }
-                this.compressedWidth = compressedWidth;
-            } else {
-                compressedWidth = this.compressedWidth;
+            if (!recalculate) {
+                return this.compressedWidth;
             }
+
+            let compressedWidth = 0;
+            let color = 'transparent';
+            let lColor = 'transparent';
+            let left = 0, top = 0;
+            let accidentals = JSON.parse(JSON.stringify(this.mAccJson));
+
+            for (let note of this.notes) {
+                let acci = this.getReqAccidental(note, accidentals);
+                let noteKey = note.toNoteStr() + acci;
+                if (noteKey in cNoteWidths) {
+                    compressedWidth += cNoteWidths[noteKey];
+                } else {
+                    let noteG = note.drawNote(this.paper, this.porteLiHe, this.lineThickness, left, top, color, lColor, acci);
+                    let wid = noteG.getBBox().width;
+                    compressedWidth += wid;
+                    cNoteWidths[noteKey] = wid;
+                    noteG.remove();
+                }
+            }
+            this.compressedWidth = compressedWidth;
             return compressedWidth;
         };
 
@@ -1117,64 +1116,51 @@
             return ((this.lastDrawnWidth - compressedWid) / numSpaces) < this.minSpace;
         };
 
-        this.drawClef = function () {
-            let leftUsablePos = this.left;
+        this.drawClef = function (left) {
+            this.clefObj = this.paper.path(symbols.gClef);
+            let porteHeight = this.porteLiHe * 4;
+            let scaleFactor = porteHeight * (74 / 40) / this.clefObj.getBBox().height;
+            let trTop = (porteHeight - this.clefObj.getBBox().height * scaleFactor) / 2;
+            let translateStr = 't ' + left + ' ' + trTop;
+            let scaleStr = 's' + scaleFactor + ' 0 0';
 
-            // clef
-            this.solAnahtari = this.paper.path(symbols.gClef);
-
-            let solHeight = this.solAnahtari.getBBox().height;
-            let solWidth = this.solAnahtari.getBBox().width;
-
-            let scaleFactor = (porteHeight) * (74 / 40) / solHeight;
-            let offsetLeft = scaleFactor * solWidth;
-
-            let scaleStr = 's' + scaleFactor;
-
-            let trLeft = leftUsablePos + (offsetLeft / 2);
-            let trTop = this.top + Math.abs(solHeight - porteHeight) / 2;
-            let translateStr = 't ' + trLeft + ' ' + trTop;
-
-            this.solAnahtari.transform(translateStr + ' ' + scaleStr);
-            this.solAnahtari.attr({
-                fill: this.configs.mainColor
+            this.clefObj.transform(translateStr + ' ' + scaleStr);
+            this.clefObj.attr({
+                fill: this.mainColor
             });
-
-            return (this.left + offsetLeft + porteLiHe * 1.5);
+            return (this.clefObj.getBBox().width + this.maxSpace);
         };
 
-        this.drawAccidentals = function (accidentals, leftUsablePos) {
-            let lastAccWidth = 0;
+        this.drawAccidentals = function (left) {
             this.accidentalsGroup = this.paper.g();
 
-            for (let i = 0; i < accidentals.length; i++) {
-                let note = accidentals[i];
+            for (let i = 0; i < this.mAccArr.length; i++) {
+                let note = this.mAccArr[i];
                 let notePos = notePositions[note.getNote()];
 
                 let accPath = symbols[note.getAcc()];
                 let accSymbol = this.paper.path(accPath);
-                let scaleFactor = parseFloat((porteLiHe / 3.25).toFixed(2));
+                let scaleFactor = parseFloat((this.porteLiHe / 3.25).toFixed(2));
 
-                let top = this.top + (notePos * porteLiHe);
+                let top = notePos * this.porteLiHe;
 
-                let translateStr = 't ' + leftUsablePos + ' ' + top;
+                let translateStr = 't ' + left + ' ' + top;
                 let scaleStr = 's' + scaleFactor + ' 0 0';
                 accSymbol.transform(translateStr + ' ' + scaleStr);
                 accSymbol.attr({
-                    fill: this.configs.mainColor
+                    fill: this.mainColor
                 });
-                lastAccWidth = accSymbol.getBBox().width;
-                leftUsablePos += lastAccWidth + porteLiHe / 2;
+                left += accSymbol.getBBox().width + (this.porteLiHe / 2);
                 this.accidentalsGroup.add(accSymbol);
             }
-
-            return leftUsablePos;
+            return (this.accidentalsGroup.getBBox().width + this.maxSpace);
         };
 
-        this.drawMeter = function (leftUsablePos) {
-            leftUsablePos += porteLiHe / 2;
-            let scaleFactor = parseFloat((porteLiHe / 2.5).toFixed(2));
-            let numElems = ('' + this.timeSig.num).split('');
+        this.drawMeter = function (left) {
+            this.meterGroup = this.paper.g();
+
+            let scaleFactor = parseFloat((this.porteLiHe / 2.5).toFixed(2));
+            let numElems = ('' + this.meter.num).split('');
             let locLeft = 0;
             let numG = this.paper.g();
             let translateStr, scaleStr;
@@ -1185,14 +1171,14 @@
                 scaleStr = 's' + scaleFactor + ' 0 0';
                 numElem.transform(translateStr + ' ' + scaleStr);
                 numElem.attr({
-                    fill: this.configs.mainColor
+                    fill: this.mainColor
                 });
                 locLeft += numElem.getBBox().width;
             }
-            translateStr = 't ' + leftUsablePos + ' ' + (this.top + this.configs.lineThickness);
+            translateStr = 't ' + left + ' ' + this.lineThickness;
             numG.transform(translateStr);
 
-            let denElems = ('' + this.timeSig.den).split('');
+            let denElems = ('' + this.meter.den).split('');
             let denG = this.paper.g();
             locLeft = 0;
             for (let n of denElems) {
@@ -1202,61 +1188,53 @@
                 scaleStr = 's' + scaleFactor + ' 0 0';
                 denElem.transform(translateStr + ' ' + scaleStr);
                 denElem.attr({
-                    fill: this.configs.mainColor
+                    fill: this.mainColor
                 });
                 locLeft += denElem.getBBox().width;
             }
             let offset = (numG.getBBox().width - denG.getBBox().width) / 2;
-            translateStr = 't ' + (leftUsablePos + offset) + ' ' + (this.top + porteLiHe * 2 + this.configs.lineThickness);
+            translateStr = 't ' + (left + offset) + ' ' + (this.porteLiHe * 2 + this.lineThickness);
             denG.transform(translateStr);
 
-            // measures
-            leftUsablePos += Math.max(numG.getBBox().width, denG.getBBox().width) + porteLiHe;
-            return leftUsablePos;
+            this.meterGroup.add(numG);
+            this.meterGroup.add(denG);
+            return (this.meterGroup.getBBox().width + this.maxSpace);
         };
 
-        this.drawMeasure = function (fitToOldWidth) {
-            if (this.lastDrawnWidth) {
-                this.eraseMeasure();
-            }
-            let space, smallSpacer;
-            let isFull = this.isFull();
-            if (fitToOldWidth) {
-                smallSpacer = 0;
-                let compressedWid = this.getCompressedWidth(false);
-                let numSpaces = isFull ? (this.notes.length + 1) : (this.notes.length + 2);
-                space = (this.lastDrawnWidth - compressedWid) / numSpaces;
-            } else {
-                space = this.maxSpace;
-                smallSpacer = this.widthDiff / (this.notes.length + 1);
+        this.drawMeasure = function () {
+            this.mainGroup = this.paper.g();
+            this.mainGroup.transform('t ' + this.startPos + ' ' + this.porteTop);
+            let left = this.maxSpace;
+            if (this.clefVisible) {
+                left += this.drawClef(left);
             }
 
-            let accidentals = JSON.parse(JSON.stringify(this.mAccidentals));
-            let left = this.startPos + space + smallSpacer;
+            if (this.gAcciVisible) {
+                left += this.drawAccidentals(left);
+            }
+
+            if (this.meterVisible) {
+                left += this.drawMeter(left);
+                left += this.maxSpace;
+            }
+
+            this.mainGroup.add(this.clefObj);
+            this.mainGroup.add(this.accidentalsGroup);
+            this.mainGroup.add(this.meterGroup);
+
+            let space = this.maxSpace;
+            let accidentals = JSON.parse(JSON.stringify(this.mAccJson));
 
             for (let note of this.notes) {
                 let acci = this.getReqAccidental(note, accidentals);
                 let noteG = note.drawNote(this.paper, this.porteLiHe, this.lineThickness, left, this.porteTop, this.noteColor, this.porteLineColor, acci);
                 this.noteLefts.push(left);
                 let noteWidth = noteG.getBBox().width;
-                left += noteWidth + space + smallSpacer;
+                left += noteWidth + space;
                 this.paperNotes.push(noteG);
             }
 
-            if (this.notes.length === 0) {
-                left = this.startPos + this.emptyMeasureWidth + smallSpacer;
-            } else {
-                if (!isFull) {
-                    left += space;
-                }
-            }
-
-            let endingDiff = this.satirEndPos - left;
-            if (Math.abs(endingDiff) <= 1 || (endingDiff < 0)) {
-                left = this.satirEndPos;
-            }
-
-            this.lastDrawnWidth = left - this.startPos;
+            this.lastDrawnWidth = left;
 
             let epsilon = this.porteLiHe / 5;
 
@@ -1526,7 +1504,7 @@
                         if (this.needsEnlargement()) {
                             console.log('enlarge');
                         } else {
-                            this.drawMeasure(true);
+                            this.drawMeasure();
                         }
                         break;
                     case 'rest':
@@ -1545,7 +1523,7 @@
                         if (this.needsEnlargement()) {
                             console.log('enlarge');
                         } else {
-                            this.drawMeasure(true);
+                            this.drawMeasure();
                         }
                         break;
                     default:
@@ -1599,7 +1577,7 @@
                         this.measures[i].setMeterVisibility(true);
                     }
                 }
-                leftOffset = this.measures[i].drawMeasure(false);
+                leftOffset = this.measures[i].drawMeasure();
                 sParams.startLeft = leftOffset;
             }
         };
@@ -1677,18 +1655,14 @@
             setUsul(usul, meter);
 
             this.satirlar = [];
-            let initialMeter = {
-                num: meter[0],
-                den: meter[1]
-            };
-            let initialAccidentals = {};
-            for (let accidental of accidentals) {
-                let note = new Note(accidental, '1/1');
-                initialAccidentals[note.noteRoot] = note.noteComma;
-            }
 
             let satir = new SatirObject(satirNo, this.paper, this.configs, pLeft, offsetTop, satirWidth, this);
-            satir.addMeasure(new Measure(initialMeter, initialAccidentals));
+            let measure = new Measure(meter, accidentals);
+            measure.addNote('Rest', '1/8');
+            measure.addNote('La4', '1/8');
+            measure.addNote('Si4b4', '1/4');
+            measure.addNote('Re5', '3/16');
+            satir.addMeasure(measure);
             this.satirlar.push(satir);
 
             this.svgElem.style.height = (pTop + pBot) + (numOfReqLines * 17 * porLiHe) + 'px';
