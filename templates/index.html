@@ -863,7 +863,6 @@
                 noteG.transform(translateStr);
             }
             return noteG;
-
         };
 
         this.toNoteStr = function () {
@@ -875,12 +874,12 @@
         this.notes = [];
         this.allYPos = [];
         this.noteLefts = [];
-        this.paperNotes = [];
         this.parentSatir = null;
         this.paper = null;
         this.mainGroup = null;
         this.accidentalsGroup = null;
         this.meterGroup = null;
+        this.staffGroup = null;
         this.guideGroup = null;
         this.notesGroup = null;
         this.mLine = null;
@@ -1028,10 +1027,6 @@
         };
 
         this.eraseMeasure = function () {
-            for (let pNote of this.paperNotes) {
-                pNote.remove();
-            }
-
             if (this.mLine) {
                 this.mLine.remove();
                 this.mLine = null;
@@ -1046,8 +1041,6 @@
                 this.notesGroup.remove();
                 this.notesGroup = null;
             }
-
-            this.paperNotes = [];
             this.noteLefts = [];
             this.allYPos = [];
         };
@@ -1128,7 +1121,7 @@
             this.clefObj.attr({
                 fill: this.mainColor
             });
-            return (this.clefObj.getBBox().width + this.maxSpace);
+            return (this.clefObj.getBBox().width + this.porteLiHe);
         };
 
         this.drawAccidentals = function (left) {
@@ -1153,11 +1146,12 @@
                 left += accSymbol.getBBox().width + (this.porteLiHe / 2);
                 this.accidentalsGroup.add(accSymbol);
             }
-            return (this.accidentalsGroup.getBBox().width + this.maxSpace);
+            return (this.accidentalsGroup.getBBox().width + this.porteLiHe);
         };
 
         this.drawMeter = function (left) {
             this.meterGroup = this.paper.g();
+            this.meterGroup.transform('t ' + left + ' ' + 0);
 
             let scaleFactor = parseFloat((this.porteLiHe / 2.5).toFixed(2));
             let numElems = ('' + this.meter.num).split('');
@@ -1175,7 +1169,7 @@
                 });
                 locLeft += numElem.getBBox().width;
             }
-            translateStr = 't ' + left + ' ' + this.lineThickness;
+            translateStr = 't ' + 0 + ' ' + this.lineThickness;
             numG.transform(translateStr);
 
             let denElems = ('' + this.meter.den).split('');
@@ -1193,46 +1187,65 @@
                 locLeft += denElem.getBBox().width;
             }
             let offset = (numG.getBBox().width - denG.getBBox().width) / 2;
-            translateStr = 't ' + (left + offset) + ' ' + (this.porteLiHe * 2 + this.lineThickness);
+            translateStr = 't ' + offset + ' ' + (this.porteLiHe * 2 + this.lineThickness);
             denG.transform(translateStr);
 
             this.meterGroup.add(numG);
             this.meterGroup.add(denG);
-            return (this.meterGroup.getBBox().width + this.maxSpace);
+            return (this.meterGroup.getBBox().width + this.porteLiHe);
+        };
+
+        this.drawNotes = function (left) {
+            this.notesGroup = this.paper.g();
+            this.notesGroup.transform('t ' + left + ' ' + 0);
+            let space = this.maxSpace;
+            let accidentals = JSON.parse(JSON.stringify(this.mAccJson));
+            let leftMargin = space;
+            for (let note of this.notes) {
+                let acci = this.getReqAccidental(note, accidentals);
+                let noteG = note.drawNote(this.paper, this.porteLiHe, this.lineThickness, leftMargin, 0, this.noteColor, this.porteLineColor, acci);
+                this.notesGroup.add(noteG);
+                this.noteLefts.push(leftMargin);
+                leftMargin += noteG.getBBox().width + space;
+            }
+            return (leftMargin + space);
+        };
+
+        this.drawStaff = function (width) {
+            this.staffGroup = this.paper.g();
+            for (let i = 0; i < 5; i++) {
+                let line = this.paper.line(0, i * this.porteLiHe, width, i * this.porteLiHe);
+                line.attr({
+                    stroke: this.porteLineColor,
+                    strokeWidth: this.lineThickness
+                });
+                this.staffGroup.add(line);
+            }
         };
 
         this.drawMeasure = function () {
             this.mainGroup = this.paper.g();
             this.mainGroup.transform('t ' + this.startPos + ' ' + this.porteTop);
-            let left = this.maxSpace;
+            let left = 0;
+
             if (this.clefVisible) {
                 left += this.drawClef(left);
             }
-
             if (this.gAcciVisible) {
                 left += this.drawAccidentals(left);
             }
-
             if (this.meterVisible) {
                 left += this.drawMeter(left);
-                left += this.maxSpace;
             }
 
+            left += this.drawNotes(left);
+
+            this.drawStaff(left - this.startPos);
+            this.mainGroup.add(this.staffGroup);
             this.mainGroup.add(this.clefObj);
             this.mainGroup.add(this.accidentalsGroup);
             this.mainGroup.add(this.meterGroup);
-
-            let space = this.maxSpace;
-            let accidentals = JSON.parse(JSON.stringify(this.mAccJson));
-
-            for (let note of this.notes) {
-                let acci = this.getReqAccidental(note, accidentals);
-                let noteG = note.drawNote(this.paper, this.porteLiHe, this.lineThickness, left, this.porteTop, this.noteColor, this.porteLineColor, acci);
-                this.noteLefts.push(left);
-                let noteWidth = noteG.getBBox().width;
-                left += noteWidth + space;
-                this.paperNotes.push(noteG);
-            }
+            this.mainGroup.add(this.notesGroup);
 
             this.lastDrawnWidth = left;
 
@@ -1270,12 +1283,6 @@
             });
 
             this.guideGroup.addClass('no-print');
-
-            // create group for notes
-            this.notesGroup = this.paper.g();
-            for (let paperNote of this.paperNotes) {
-                this.notesGroup.add(paperNote);
-            }
 
             // set y coords of all possible notes
             for (let i = -10; i <= 18; i++) {
@@ -1660,6 +1667,7 @@
             let measure = new Measure(meter, accidentals);
             measure.addNote('Rest', '1/8');
             measure.addNote('La4', '1/8');
+            measure.addNote('La5', '1/16');
             measure.addNote('Si4b4', '1/4');
             measure.addNote('Re5', '3/16');
             satir.addMeasure(measure);
