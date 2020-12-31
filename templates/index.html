@@ -1197,6 +1197,7 @@
 
         this.drawNotes = function (left) {
             this.notesGroup = this.paper.g();
+            this.notesGroup.addClass('notes-group');
             this.notesGroup.transform('t ' + left + ' ' + 0);
             let space = this.maxSpace;
             let accidentals = JSON.parse(JSON.stringify(this.mAccJson));
@@ -1208,11 +1209,12 @@
                 this.noteLefts.push(leftMargin);
                 leftMargin += noteG.getBBox().width + space;
             }
-            return (leftMargin + space);
+            return leftMargin;
         };
 
         this.drawStaff = function (width) {
             this.staffGroup = this.paper.g();
+            this.staffGroup.addClass('staff-group');
             for (let i = 0; i < 5; i++) {
                 let line = this.paper.line(0, i * this.porteLiHe, width, i * this.porteLiHe);
                 line.attr({
@@ -1221,10 +1223,39 @@
                 });
                 this.staffGroup.add(line);
             }
+            // measure ending line
+            let meEndLine = this.paper.line(width, 0, width, this.porteLiHe * 4);
+            meEndLine.attr({
+                stroke: this.porteLineColor,
+                strokeWidth: this.lineThickness
+            });
+            this.staffGroup.add(meEndLine);
+        };
+
+        this.drawGuides = function (width) {
+            // draw upper & lower guide lines
+            let y;
+            this.guideGroup = this.paper.g();
+            for (let i = 1; i <= 5; i++) {
+                y = -i * this.porteLiHe;
+                let upperLine = this.paper.line(0, y, width, y);
+                this.guideGroup.add(upperLine);
+
+                y = (i + 4) * this.porteLiHe;
+                let lowerLine = this.paper.line(0, y, width, y);
+                this.guideGroup.add(lowerLine);
+            }
+            this.guideGroup.attr({
+                stroke: 'transparent',
+                strokeWidth: this.lineThickness
+            });
+
+            this.guideGroup.addClass('no-print');
         };
 
         this.drawMeasure = function () {
             this.mainGroup = this.paper.g();
+            this.mainGroup.addClass('main-group');
             this.mainGroup.transform('t ' + this.startPos + ' ' + this.porteTop);
             let left = 0;
 
@@ -1240,11 +1271,22 @@
 
             left += this.drawNotes(left);
 
-            this.drawStaff(left - this.startPos);
+            this.drawGuides(left);
+            this.drawStaff(left);
+
+            this.mainGroup.add(this.guideGroup);
             this.mainGroup.add(this.staffGroup);
-            this.mainGroup.add(this.clefObj);
-            this.mainGroup.add(this.accidentalsGroup);
-            this.mainGroup.add(this.meterGroup);
+
+            if (this.clefVisible) {
+                this.mainGroup.add(this.clefObj);
+            }
+            if (this.gAcciVisible) {
+                this.mainGroup.add(this.accidentalsGroup);
+            }
+            if (this.meterVisible) {
+                this.mainGroup.add(this.meterGroup);
+            }
+
             this.mainGroup.add(this.notesGroup);
 
             this.lastDrawnWidth = left;
@@ -1252,38 +1294,11 @@
             let epsilon = this.porteLiHe / 5;
 
             // measure bounding box
-            this.endPos = left;
+            this.endPos = this.startPos + left;
             this.box.top = this.porteTop - this.porteLiHe * 5;
             this.box.right = this.endPos - epsilon;
             this.box.bottom = this.porteTop + this.porteLiHe * 9;
             this.box.left = this.startPos + epsilon;
-
-            // measure ending line
-            this.mLine = this.paper.line(left, this.porteTop, left, this.porteTop + this.porteLiHe * 4);
-            this.mLine.attr({
-                stroke: this.porteLineColor,
-                strokeWidth: this.lineThickness
-            });
-
-            // draw upper & lower guide lines
-            let y;
-            this.guideGroup = this.paper.g();
-            for (let i = 1; i <= 5; i++) {
-                y = this.porteTop - i * this.porteLiHe;
-                let upperLine = this.paper.line(this.box.left, y, this.box.right, y);
-                this.guideGroup.add(upperLine);
-
-                y = this.porteTop + (i + 4) * this.porteLiHe;
-                let lowerLine = this.paper.line(this.box.left, y, this.box.right, y);
-                this.guideGroup.add(lowerLine);
-            }
-            this.guideGroup.attr({
-                stroke: 'transparent',
-                strokeWidth: this.lineThickness
-            });
-
-            this.guideGroup.addClass('no-print');
-
             // set y coords of all possible notes
             for (let i = -10; i <= 18; i++) {
                 this.allYPos.push(this.porteTop + (this.porteLiHe / 2) * i);
@@ -1584,7 +1599,7 @@
                         this.measures[i].setMeterVisibility(true);
                     }
                 }
-                leftOffset = this.measures[i].drawMeasure();
+                leftOffset += this.measures[i].drawMeasure();
                 sParams.startLeft = leftOffset;
             }
         };
@@ -1671,6 +1686,15 @@
             measure.addNote('Si4b4', '1/4');
             measure.addNote('Re5', '3/16');
             satir.addMeasure(measure);
+
+            measure = new Measure(meter, accidentals);
+            measure.addNote('Rest', '1/16');
+            measure.addNote('Do5#4', '1/2');
+            measure.addNote('Fa5', '1/8');
+            measure.addNote('Mi5', '1/8');
+            measure.addNote('Re5', '1/32');
+            satir.addMeasure(measure);
+
             this.satirlar.push(satir);
 
             this.svgElem.style.height = (pTop + pBot) + (numOfReqLines * 17 * porLiHe) + 'px';
