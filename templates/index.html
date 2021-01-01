@@ -882,7 +882,6 @@
         this.staffGroup = null;
         this.guideGroup = null;
         this.notesGroup = null;
-        this.mLine = null;
         this.clefObj = null;
 
         this.mAccJson = {};
@@ -1027,22 +1026,18 @@
         };
 
         this.eraseMeasure = function () {
-            if (this.mLine) {
-                this.mLine.remove();
-                this.mLine = null;
-            }
-
-            if (this.guideGroup) {
-                this.guideGroup.remove();
-                this.guideGroup = null;
-            }
-
-            if (this.notesGroup) {
-                this.notesGroup.remove();
-                this.notesGroup = null;
-            }
-            this.noteLefts = [];
             this.allYPos = [];
+            this.noteLefts = [];
+            if (this.mainGroup) {
+                this.mainGroup.remove();
+                this.mainGroup = null;
+                this.accidentalsGroup = null;
+                this.meterGroup = null;
+                this.staffGroup = null;
+                this.guideGroup = null;
+                this.notesGroup = null;
+                this.clefObj = null;
+            }
         };
 
         this.isFull = function () {
@@ -1206,7 +1201,7 @@
                 let acci = this.getReqAccidental(note, accidentals);
                 let noteG = note.drawNote(this.paper, this.porteLiHe, this.lineThickness, leftMargin, 0, this.noteColor, this.porteLineColor, acci);
                 this.notesGroup.add(noteG);
-                this.noteLefts.push(leftMargin);
+                this.noteLefts.push(this.startPos + left + leftMargin);
                 leftMargin += noteG.getBBox().width + space;
             }
             return leftMargin;
@@ -1528,6 +1523,7 @@
                         if (this.needsEnlargement()) {
                             console.log('enlarge');
                         } else {
+                            this.eraseMeasure();
                             this.drawMeasure();
                         }
                         break;
