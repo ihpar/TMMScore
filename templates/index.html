@@ -1232,17 +1232,17 @@
             this.staffGroup.add(meEndLine);
         };
 
-        this.drawGuides = function (width) {
+        this.drawGuides = function (start, end) {
             // draw upper & lower guide lines
             let y;
             this.guideGroup = this.paper.g();
             for (let i = 1; i <= 5; i++) {
                 y = -i * this.porteLiHe;
-                let upperLine = this.paper.line(0, y, width, y);
+                let upperLine = this.paper.line(start, y, end, y);
                 this.guideGroup.add(upperLine);
 
                 y = (i + 4) * this.porteLiHe;
-                let lowerLine = this.paper.line(0, y, width, y);
+                let lowerLine = this.paper.line(start, y, end, y);
                 this.guideGroup.add(lowerLine);
             }
             this.guideGroup.attr({
@@ -1251,6 +1251,18 @@
             });
 
             this.guideGroup.addClass('no-print');
+        };
+
+        this.setBoundingBox = function (start, end) {
+            this.endPos = this.startPos + end;
+            this.box.top = this.porteTop - this.porteLiHe * 5;
+            this.box.right = this.endPos;
+            this.box.bottom = this.porteTop + this.porteLiHe * 9;
+            this.box.left = this.startPos + start;
+            // set y coords of all possible notes
+            for (let i = -10; i <= 18; i++) {
+                this.allYPos.push(this.porteTop + (this.porteLiHe / 2) * i);
+            }
         };
 
         this.drawMeasure = function () {
@@ -1269,9 +1281,11 @@
                 left += this.drawMeter(left);
             }
 
+            let noteStartPos = left;
+
             left += this.drawNotes(left);
 
-            this.drawGuides(left);
+            this.drawGuides(noteStartPos, left);
             this.drawStaff(left);
 
             this.mainGroup.add(this.guideGroup);
@@ -1288,21 +1302,9 @@
             }
 
             this.mainGroup.add(this.notesGroup);
+            this.setBoundingBox(noteStartPos, left);
 
             this.lastDrawnWidth = left;
-
-            let epsilon = this.porteLiHe / 5;
-
-            // measure bounding box
-            this.endPos = this.startPos + left;
-            this.box.top = this.porteTop - this.porteLiHe * 5;
-            this.box.right = this.endPos - epsilon;
-            this.box.bottom = this.porteTop + this.porteLiHe * 9;
-            this.box.left = this.startPos + epsilon;
-            // set y coords of all possible notes
-            for (let i = -10; i <= 18; i++) {
-                this.allYPos.push(this.porteTop + (this.porteLiHe / 2) * i);
-            }
 
             return left;
         };
