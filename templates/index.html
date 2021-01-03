@@ -874,6 +874,7 @@
         this.notes = [];
         this.allYPos = [];
         this.noteLefts = [];
+        this.arrIdx = 0;
         this.parentSatir = null;
         this.paper = null;
         this.mainGroup = null;
@@ -902,6 +903,7 @@
 
         this.widthDiff = 0;
         this.startPos = 0;
+        this.notesStartPos = 0;
         this.endPos = 0;
         this.satirEndPos = 0;
         this.porteTop = 0;
@@ -926,6 +928,10 @@
         this.clefVisible = false;
         this.meterVisible = false;
         this.gAcciVisible = false;
+
+        this.setArrIdx = function (idx) {
+            this.arrIdx = idx;
+        };
 
         this.setMeasureMeter = function (strMeter) {
             this.meter.strVer = strMeter;
@@ -975,7 +981,7 @@
             this.satirEndPos = sp.endPos;
             this.noteColor = sp.cfg.noteColor;
             this.porteLineColor = sp.cfg.porteLineColor;
-            this.maxSpace = this.porteLiHe * 1.6;
+            this.maxSpace = this.porteLiHe * 1.2;
             this.minSpace = this.porteLiHe * 0.8;
         };
 
@@ -1194,6 +1200,11 @@
             this.notesGroup = this.paper.g();
             this.notesGroup.addClass('notes-group');
             this.notesGroup.transform('t ' + left + ' ' + 0);
+
+            if (this.isMeasureEmpty()) {
+                return this.emptyMeasureWidth;
+            }
+
             let space = this.maxSpace;
             let accidentals = JSON.parse(JSON.stringify(this.mAccJson));
             let leftMargin = space;
@@ -1203,6 +1214,9 @@
                 this.notesGroup.add(noteG);
                 this.noteLefts.push(this.startPos + left + leftMargin);
                 leftMargin += noteG.getBBox().width + space;
+            }
+            if (!this.isFull()) {
+                leftMargin += space;
             }
             return leftMargin;
         };
@@ -1261,10 +1275,10 @@
         };
 
         this.drawMeasure = function () {
+            let left = 0;
             this.mainGroup = this.paper.g();
             this.mainGroup.addClass('main-group');
             this.mainGroup.transform('t ' + this.startPos + ' ' + this.porteTop);
-            let left = 0;
 
             if (this.clefVisible) {
                 left += this.drawClef(left);
@@ -1276,11 +1290,11 @@
                 left += this.drawMeter(left);
             }
 
-            let noteStartPos = left;
+            this.notesStartPos = left;
 
             left += this.drawNotes(left);
 
-            this.drawGuides(noteStartPos, left);
+            this.drawGuides(this.notesStartPos, left);
             this.drawStaff(left);
 
             this.mainGroup.add(this.guideGroup);
@@ -1297,11 +1311,25 @@
             }
 
             this.mainGroup.add(this.notesGroup);
-            this.setBoundingBox(noteStartPos, left);
+            this.setBoundingBox(this.notesStartPos, left);
 
             this.lastDrawnWidth = left;
 
             return left;
+        };
+
+        this.shiftPosition = function (offset) {
+            this.startPos += offset;
+            this.mainGroup.transform('t ' + this.startPos + ' ' + this.porteTop);
+        };
+
+        this.insertAndDrawAt = function (pos, note) {
+            this.notes.splice(pos, 0, note);
+            this.eraseMeasure();
+            let previousWid = this.lastDrawnWidth;
+            this.drawMeasure();
+            let currentWid = this.lastDrawnWidth;
+            this.parentSatir.notifyWidthChange(this.arrIdx, currentWid - previousWid);
         };
 
         this.mouseOver = function (x, y) {
@@ -1519,13 +1547,7 @@
                         cAcci = cAcci.replace('d', '#');
                         let fullPitch = noteRoot + cAcci;
                         note = new Note(fullPitch, fullDur);
-                        this.notes.splice(i, 0, note);
-                        if (this.needsEnlargement()) {
-                            console.log('enlarge');
-                        } else {
-                            this.eraseMeasure();
-                            this.drawMeasure();
-                        }
+                        this.insertAndDrawAt(i, note);
                         break;
                     case 'rest':
                         let restBody = 'Rest';
@@ -1539,12 +1561,7 @@
                             }
                         }
                         note = new Note(restBody, restDur);
-                        this.notes.splice(i, 0, note);
-                        if (this.needsEnlargement()) {
-                            console.log('enlarge');
-                        } else {
-                            this.drawMeasure();
-                        }
+                        this.insertAndDrawAt(i, note);
                         break;
                     default:
                         break;
@@ -1562,6 +1579,7 @@
         this.top = top;
         this.width = width;
         this.measures = [];
+        this.lastMeasureIdx = 0;
 
         this.getMWParams = function () {
             return {
@@ -1577,6 +1595,8 @@
         this.addMeasure = function (measure) {
             let sParams = this.getMWParams();
             measure.setSParams(sParams);
+            measure.setArrIdx(this.lastMeasureIdx);
+            this.lastMeasureIdx += 1;
             this.measures.push(measure);
             this.remainingWidth -= measure.getIdealWidth();
         };
@@ -1599,6 +1619,12 @@
                 }
                 leftOffset += this.measures[i].drawMeasure();
                 sParams.startLeft = leftOffset;
+            }
+        };
+
+        this.notifyWidthChange = function (idx, widthDiff) {
+            for (let i = idx + 1; i < this.measures.length; i++) {
+                this.measures[i].shiftPosition(widthDiff);
             }
         };
 
@@ -1627,7 +1653,7 @@
             ghostColor: "#998166",
             ghostLineColor: "#E5DCD0",
             maxPaperWidth: 1100,
-            emptyMeasureLen: 6,
+            emptyMeasureLen: 4,
             emptyMeasureWidth: 0
         };
         let porLiHe = this.configs.porteLineHeight;
@@ -1678,19 +1704,6 @@
 
             let satir = new SatirObject(satirNo, this.paper, this.configs, pLeft, offsetTop, satirWidth, this);
             let measure = new Measure(meter, accidentals);
-            measure.addNote('Rest', '1/8');
-            measure.addNote('La4', '1/8');
-            measure.addNote('La5', '1/16');
-            measure.addNote('Si4b4', '1/4');
-            measure.addNote('Re5', '3/16');
-            satir.addMeasure(measure);
-
-            measure = new Measure(meter, accidentals);
-            measure.addNote('Rest', '1/16');
-            measure.addNote('Do5#4', '1/2');
-            measure.addNote('Fa5', '1/8');
-            measure.addNote('Mi5', '1/8');
-            measure.addNote('Re5', '1/32');
             satir.addMeasure(measure);
 
             this.satirlar.push(satir);
