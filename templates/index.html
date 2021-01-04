@@ -16,7 +16,6 @@
 <div class="dv-main-wrapper">
     <div class="dv-center-content">
         <div id="dv-top">
-            &nbsp;
         </div>
         <div id="dv-tmm-wrapper"></div>
     </div>
@@ -179,7 +178,8 @@
         dot: false,
         rest: null,
         loc: null,
-        type: null
+        type: null,
+        highElem: null
     };
 
     let cNoteWidths = {};
@@ -388,11 +388,25 @@
         }
     }
 
+    function noteGClick(e, sender, stCol, selCol) {
+        if (sender.attr('selected') === 'yes') {
+            sender.attr({fill: stCol, selected: 'no'});
+            mParams.highElem = null;
+        } else {
+            if (mParams.highElem) {
+                mParams.highElem.attr({fill: stCol, selected: 'no'});
+                mParams.highElem = null;
+            }
+            sender.attr({fill: selCol, selected: 'yes'});
+            mParams.highElem = sender;
+        }
+    }
+
     function createTMMMenu(containerSelector, paper) {
         let tabIndex = 1;
         let tmmMakams = [
-            {name: "Hicaz", accidentals: ['B4b4', 'F5#4', 'C5#4']},
-            {name: "Nihâvent", accidentals: ['B4b5', 'E5b5']}
+            {name: "Hicaz", accidentals: ['Si4b4', 'Fa5#4', 'Do5#4']},
+            {name: "Nihâvent", accidentals: ['Si4b5', 'Mi5b5']}
         ];
 
         let scoreMenu = document.createElement('div');
@@ -740,7 +754,7 @@
             return path;
         };
 
-        this.drawNote = function (paper, porteLiHe, lThickness, left, top, color, lColor, acci) {
+        this.drawNote = function (paper, porteLiHe, lThickness, left, top, lColor, acci) {
             let portePos = 0;
             let noteG = paper.g();
             let path = this.getPathStr(this.durStr);
@@ -758,10 +772,6 @@
                     accSymbol = paper.path(accPath);
                     let scaleFactor = parseFloat((porteLiHe / 2.75).toFixed(2));
                     accSymbol.transform('t ' + relLeft + ' ' + 0 + ' ' + 's' + scaleFactor + ' 0 0');
-                    accSymbol.attr({
-                        fill: color
-                    });
-
                     relLeft += accSymbol.getBBox().width + (porteLiHe / 4);
                 }
 
@@ -798,10 +808,6 @@
                 let scaleStr = 's' + scaleFactor + ' 0 0';
 
                 noteBody.transform(translateStr + ' ' + scaleStr);
-                noteBody.attr({
-                    fill: color
-                });
-
                 for (let sl of stepLines) {
                     noteG.add(sl);
                 }
@@ -814,9 +820,6 @@
 
                 if (this.isDotted) {
                     let dot = paper.circle((relLeft + porteLiHe * 3.5 / 2), 0, (porteLiHe / 5));
-                    dot.attr({
-                        fill: color
-                    });
                     noteG.add(dot);
                 }
                 translateStr = 't ' + absLeft + ' ' + absTop;
@@ -855,9 +858,6 @@
                 let translateStr = 't ' + left + ' ' + tTop;
 
                 restBody.transform(scaleStr);
-                restBody.attr({
-                    fill: color
-                });
 
                 noteG.add(restBody);
                 noteG.transform(translateStr);
@@ -876,6 +876,7 @@
         this.noteLefts = [];
         this.arrIdx = 0;
         this.parentSatir = null;
+        this.satirNo = null;
         this.paper = null;
         this.mainGroup = null;
         this.accidentalsGroup = null;
@@ -922,7 +923,9 @@
         this.minSpace = 0;
         this.lineThickness = 0;
         this.emptyMeasureWidth = 0;
+        this.highlightColor = null;
         this.noteColor = null;
+        this.noteErrColor = null;
         this.porteLineColor = null;
 
         this.clefVisible = false;
@@ -938,6 +941,16 @@
             let parts = strMeter.split('/');
             this.meter.num = parseInt(parts[0]);
             this.meter.den = parseInt(parts[1]);
+        };
+
+        this.setMeasureAccidentals = function (accidentals) {
+            this.mAccJson = {};
+            this.mAccArr = [];
+            for (let accidental of accidentals) {
+                let note = new Note(accidental, '1/1');
+                this.mAccJson[note.noteRoot] = note.noteComma;
+                this.mAccArr.push(note);
+            }
         };
 
         this.setClefVisibility = function (isVisible) {
@@ -957,6 +970,17 @@
             this.notes.push(note);
         };
 
+        this.deleteNoteAt = function (noteIdx) {
+            this.notes.splice(noteIdx, 1);
+            mParams.highElem = null;
+
+            this.eraseMeasure();
+            let previousWid = this.lastDrawnWidth;
+            this.drawMeasure();
+            let currentWid = this.lastDrawnWidth;
+            this.parentSatir.notifyWidthChange(this.arrIdx, currentWid - previousWid);
+        };
+
         this.getNotes = function () {
             return this.notes;
         };
@@ -966,9 +990,10 @@
         };
 
         this.setSParams = function (sParams) {
-            let sp = Object.assign({}, sParams);
             this.parentSatir = sParams.parentSatir;
-            this.paper = sp.paper;
+            this.paper = sParams.paper;
+            let sp = Object.assign({}, sParams);
+            this.satirNo = sp.satirNo;
             this.startPos = sp.startLeft;
             this.porteTop = sp.startTop;
             this.porteLiHe = sp.cfg.porteLineHeight;
@@ -979,7 +1004,9 @@
             this.ghostLineColor = sp.cfg.ghostLineColor;
             this.emptyMeasureWidth = sp.cfg.emptyMeasureWidth;
             this.satirEndPos = sp.endPos;
+            this.highlightColor = sp.cfg.highColor;
             this.noteColor = sp.cfg.noteColor;
+            this.noteErrColor = sp.cfg.noteErrColor;
             this.porteLineColor = sp.cfg.porteLineColor;
             this.maxSpace = this.porteLiHe * 1.2;
             this.minSpace = this.porteLiHe * 0.8;
@@ -1046,68 +1073,24 @@
             }
         };
 
-        this.isFull = function () {
+        this.isExceeded = function () {
             let total = 0;
-            let epsilon = 0.001;
             for (let note of this.notes) {
                 total += note.getDuration();
             }
-            return (total + epsilon) >= (this.meter.num / this.meter.den);
+            return (total > (this.meter.num / this.meter.den));
         };
 
-        this.isMeasureEmpty = function () {
-            return (this.notes.length === 0);
-        };
-
-        this.getCompressedWidth = function (recalculate) {
-            if (!recalculate) {
-                return this.compressedWidth;
-            }
-
-            let compressedWidth = 0;
-            let color = 'transparent';
-            let lColor = 'transparent';
-            let left = 0, top = 0;
-            let accidentals = JSON.parse(JSON.stringify(this.mAccJson));
-
+        this.isFull = function () {
+            let total = 0;
             for (let note of this.notes) {
-                let acci = this.getReqAccidental(note, accidentals);
-                let noteKey = note.toNoteStr() + acci;
-                if (noteKey in cNoteWidths) {
-                    compressedWidth += cNoteWidths[noteKey];
-                } else {
-                    let noteG = note.drawNote(this.paper, this.porteLiHe, this.lineThickness, left, top, color, lColor, acci);
-                    let wid = noteG.getBBox().width;
-                    compressedWidth += wid;
-                    cNoteWidths[noteKey] = wid;
-                    noteG.remove();
-                }
+                total += note.getDuration();
             }
-            this.compressedWidth = compressedWidth;
-            return compressedWidth;
+            return (total === (this.meter.num / this.meter.den));
         };
 
-        this.getIdealWidth = function () {
-            let noteCount = this.notes.length;
-            if (noteCount === 0) {
-                return this.emptyMeasureWidth;
-            }
-
-            let compressedWid = this.getCompressedWidth(true);
-            let isFull = this.isFull();
-            let numSpaces = isFull ? (noteCount + 1) : (noteCount + 2);
-            return compressedWid + numSpaces * this.maxSpace;
-        };
-
-        this.needsEnlargement = function () {
-            let noteCount = this.notes.length;
-            if (noteCount === 0) {
-                return false;
-            }
-            let compressedWid = this.getCompressedWidth(true);
-            let isFull = this.isFull();
-            let numSpaces = isFull ? (noteCount + 1) : (noteCount + 2);
-            return ((this.lastDrawnWidth - compressedWid) / numSpaces) < this.minSpace;
+        this.isEmpty = function () {
+            return (this.notes.length === 0);
         };
 
         this.drawClef = function (left) {
@@ -1200,20 +1183,29 @@
             this.notesGroup = this.paper.g();
             this.notesGroup.addClass('notes-group');
             this.notesGroup.transform('t ' + left + ' ' + 0);
+            let color = this.isExceeded() ? this.noteErrColor : this.noteColor;
+            let highColor = this.highlightColor;
 
-            if (this.isMeasureEmpty()) {
+            if (this.isEmpty()) {
                 return this.emptyMeasureWidth;
             }
 
             let space = this.maxSpace;
             let accidentals = JSON.parse(JSON.stringify(this.mAccJson));
             let leftMargin = space;
+            let noteIdx = 0;
             for (let note of this.notes) {
                 let acci = this.getReqAccidental(note, accidentals);
-                let noteG = note.drawNote(this.paper, this.porteLiHe, this.lineThickness, leftMargin, 0, this.noteColor, this.porteLineColor, acci);
+                let noteG = note.drawNote(this.paper, this.porteLiHe, this.lineThickness, leftMargin, 0, this.porteLineColor, acci);
+                noteG.attr({fill: color, smn: [this.satirNo, this.arrIdx, noteIdx].join(',')});
+                noteG.click(function (e) {
+                    noteGClick(e, this, color, highColor);
+                    e.stopPropagation();
+                });
                 this.notesGroup.add(noteG);
                 this.noteLefts.push(this.startPos + left + leftMargin);
                 leftMargin += noteG.getBBox().width + space;
+                noteIdx += 1;
             }
             if (!this.isFull()) {
                 leftMargin += space;
@@ -1588,7 +1580,8 @@
                 cfg: this.configs,
                 endPos: this.width + this.left,
                 paper: this.paper,
-                parentSatir: this
+                parentSatir: this,
+                satirNo: this.satirNo
             };
         };
 
@@ -1598,7 +1591,6 @@
             measure.setArrIdx(this.lastMeasureIdx);
             this.lastMeasureIdx += 1;
             this.measures.push(measure);
-            this.remainingWidth -= measure.getIdealWidth();
         };
 
         this.drawSatir = function () {
@@ -1628,6 +1620,15 @@
             }
         };
 
+        this.changeMakamAndMeter = function (makam, accidentals, usul, meter) {
+            for (let measure of this.measures) {
+                measure.setMeasureMeter(meter[0] + '/' + meter[1]);
+                measure.setMeasureAccidentals(accidentals);
+                measure.eraseMeasure();
+            }
+            this.drawSatir();
+        };
+
         this.handleMouse = function (x, y) {
             for (let measure of this.measures) {
                 measure.mouseOver(x, y);
@@ -1639,6 +1640,10 @@
                 measure.mouseClick(x, y);
             }
         };
+
+        this.deleteSatirNote = function (measureIdx, noteIdx) {
+            this.measures[measureIdx].deleteNoteAt(noteIdx);
+        };
     }
 
     function TmmScore(containerSelector) {
@@ -1646,7 +1651,9 @@
             padding: {top: 20, right: 20, bottom: 20, left: 20},
             lineThickness: 1,
             porteLineHeight: 10,
+            highColor: "#46879E",
             noteColor: "#243041",
+            noteErrColor: "#9B1800",
             mainColor: "#565345",
             porteLineColor: "#BDA37E",
             paperBgColor: "#F7F5EA",
@@ -1688,7 +1695,9 @@
         let offsetTop = pTop + (6 * porLiHe);
 
         this.changeScoreMakamAndMeter = function (makam, accidentals, usul, meter) {
-            console.log(makam, accidentals, usul, meter);
+            for (let satir of this.satirlar) {
+                satir.changeMakamAndMeter(makam, accidentals, usul, meter);
+            }
         };
 
         this.initScore = function () {
@@ -1747,6 +1756,13 @@
                     satir.handleClick(x, y);
                 }
             }, false);
+
+            document.addEventListener('keydown', function (evt) {
+                if (mParams.highElem && (evt.key === 'Delete' || evt.key === 'Backspace')) {
+                    let smn = mParams.highElem.attr('smn').split(',');
+                    that.satirlar[smn[0]].deleteSatirNote(smn[1], smn[2]);
+                }
+            })
         };
 
         this.begin = function () {

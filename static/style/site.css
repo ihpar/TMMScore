@@ -137,6 +137,11 @@ body ::-webkit-scrollbar-thumb:hover {
     align-items: center;
     justify-content: center;
     transition: all 100ms;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .btn-group .tmm-menu-btn.clicked, .btn-group .tmm-menu-btn-no:focus {
