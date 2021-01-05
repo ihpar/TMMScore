@@ -179,7 +179,9 @@
         rest: null,
         loc: null,
         type: null,
-        highElem: null
+        highElem: null,
+        totalNoteCount: 0,
+        allowInsert: true
     };
 
     let cNoteWidths = {};
@@ -402,6 +404,24 @@
         }
     }
 
+    function besteleButtonClick(e, sender) {
+        console.log(sender);
+        e.stopPropagation();
+    }
+
+    function allowNewInsertion(allow) {
+        if (allow) {
+            mParams.allowInsert = true;
+            document.getElementById('btnBestele').classList.add('disabled-elem');
+        } else {
+            mParams.allowInsert = false;
+            document.getElementById('btnBestele').classList.remove('disabled-elem');
+            if (document.querySelector('.tmm-menu-btn.dur-btn.clicked')) {
+                document.querySelector('.tmm-menu-btn.dur-btn.clicked').click();
+            }
+        }
+    }
+
     function createTMMMenu(containerSelector, paper) {
         let tabIndex = 1;
         let tmmMakams = [
@@ -603,9 +623,13 @@
 
         let toServerBtn = document.createElement('div');
         tabIndex += 1;
+        toServerBtn.id = 'btnBestele';
         toServerBtn.tabIndex = tabIndex;
-        toServerBtn.className = 'tmm-menu-btn-no';
+        toServerBtn.className = 'tmm-menu-btn-no disabled-elem';
         toServerBtn.innerHTML = '<span class="spn-button-text">Bestele!</span>';
+        toServerBtn.addEventListener('click', function (e) {
+            besteleButtonClick(e, this);
+        });
 
         dvUIBtns.appendChild(toServerBtn);
 
@@ -633,6 +657,7 @@
         this.noteComma = '';
         this.durStr = duration;
         this.origDurStr = duration;
+        this.origPitchStr = pitch;
         let durParts = this.durStr.split('/');
         this.durNum = parseInt(durParts[0]);
         this.durDen = parseInt(durParts[1]);
@@ -661,6 +686,11 @@
             this.noteRoot = "rest";
         }
 
+        // getters
+        this.getAcc = function () {
+            return this.noteComma;
+        };
+
         this.getDuration = function () {
             if (this.isDotted) {
                 return 3 / (2 * this.durDen);
@@ -673,10 +703,6 @@
                 return this.noteRoot;
             }
             return this.noteRoot + this.noteOctave;
-        };
-
-        this.getAcc = function () {
-            return this.noteComma;
         };
 
         this.getPathStr = function (durStr) {
@@ -754,6 +780,7 @@
             return path;
         };
 
+        // methods
         this.drawNote = function (paper, porteLiHe, lThickness, left, top, lColor, acci) {
             let portePos = 0;
             let noteG = paper.g();
@@ -865,8 +892,15 @@
             return noteG;
         };
 
-        this.toNoteStr = function () {
-            return this.getNote() + this.origDurStr;
+        this.toNoteStr = function (includeAcc, includeDur) {
+            let res = this.getNote();
+            if (includeAcc) {
+                res = this.origPitchStr;
+            }
+            if (includeDur) {
+                res += this.origDurStr;
+            }
+            return res;
         };
     }
 
@@ -932,15 +966,29 @@
         this.meterVisible = false;
         this.gAcciVisible = false;
 
+        // setters
         this.setArrIdx = function (idx) {
             this.arrIdx = idx;
         };
 
-        this.setMeasureMeter = function (strMeter) {
-            this.meter.strVer = strMeter;
-            let parts = strMeter.split('/');
-            this.meter.num = parseInt(parts[0]);
-            this.meter.den = parseInt(parts[1]);
+        this.setBoundingBox = function (start, end) {
+            this.endPos = this.startPos + end;
+            this.box.top = this.porteTop - this.porteLiHe * 5;
+            this.box.right = this.endPos;
+            this.box.bottom = this.porteTop + this.porteLiHe * 9;
+            this.box.left = this.startPos + start;
+            // set y coords of all possible notes
+            for (let i = -10; i <= 18; i++) {
+                this.allYPos.push(this.porteTop + (this.porteLiHe / 2) * i);
+            }
+        };
+
+        this.setClefVisibility = function (isVisible) {
+            this.clefVisible = isVisible;
+        };
+
+        this.setGAcciVisibility = function (isVisible) {
+            this.gAcciVisible = isVisible;
         };
 
         this.setMeasureAccidentals = function (accidentals) {
@@ -953,40 +1001,15 @@
             }
         };
 
-        this.setClefVisibility = function (isVisible) {
-            this.clefVisible = isVisible;
+        this.setMeasureMeter = function (strMeter) {
+            this.meter.strVer = strMeter;
+            let parts = strMeter.split('/');
+            this.meter.num = parseInt(parts[0]);
+            this.meter.den = parseInt(parts[1]);
         };
 
         this.setMeterVisibility = function (isVisible) {
             this.meterVisible = isVisible;
-        };
-
-        this.setGAcciVisibility = function (isVisible) {
-            this.gAcciVisible = isVisible;
-        };
-
-        this.addNote = function (pitch, dur) {
-            let note = new Note(pitch, dur);
-            this.notes.push(note);
-        };
-
-        this.deleteNoteAt = function (noteIdx) {
-            this.notes.splice(noteIdx, 1);
-            mParams.highElem = null;
-
-            this.eraseMeasure();
-            let previousWid = this.lastDrawnWidth;
-            this.drawMeasure();
-            let currentWid = this.lastDrawnWidth;
-            this.parentSatir.notifyWidthChange(this.arrIdx, currentWid - previousWid);
-        };
-
-        this.getNotes = function () {
-            return this.notes;
-        };
-
-        this.setWidthDiff = function (diff) {
-            this.widthDiff = diff;
         };
 
         this.setSParams = function (sParams) {
@@ -1010,6 +1033,27 @@
             this.porteLineColor = sp.cfg.porteLineColor;
             this.maxSpace = this.porteLiHe * 1.2;
             this.minSpace = this.porteLiHe * 0.8;
+        };
+
+        this.setWidthDiff = function (diff) {
+            this.widthDiff = diff;
+        };
+
+        // getters
+        this.getAccidentalsStr = function () {
+            let res = [];
+            for (let note of this.mAccArr) {
+                res.push(note.toNoteStr(true, false));
+            }
+            return res;
+        };
+
+        this.getMeter = function () {
+            return [this.meter.num, this.meter.den];
+        };
+
+        this.getNotes = function () {
+            return this.notes;
         };
 
         this.getReqAccidental = function (note, accidentals) {
@@ -1058,54 +1102,26 @@
             }
         };
 
-        this.eraseMeasure = function () {
-            this.allYPos = [];
-            this.noteLefts = [];
-            if (this.mainGroup) {
-                this.mainGroup.remove();
-                this.mainGroup = null;
-                this.accidentalsGroup = null;
-                this.meterGroup = null;
-                this.staffGroup = null;
-                this.guideGroup = null;
-                this.notesGroup = null;
-                this.clefObj = null;
+        // methods
+        this.addNote = function (pitch, dur) {
+            let note = new Note(pitch, dur);
+            this.notes.push(note);
+            mParams.totalNoteCount += 1;
+        };
+
+        this.deleteNoteAt = function (noteIdx) {
+            this.notes.splice(noteIdx, 1);
+            mParams.totalNoteCount -= 1;
+            mParams.highElem = null;
+            if (mParams.totalNoteCount < 8) {
+                allowNewInsertion(true);
             }
-        };
-
-        this.isExceeded = function () {
-            let total = 0;
-            for (let note of this.notes) {
-                total += note.getDuration();
+            if (this.isEmpty() && this.arrIdx > 0) {
+                this.eraseMeasure();
+                this.parentSatir.deleteMeasureAtIdx(this.arrIdx, this.startPos);
+                return;
             }
-            return (total > (this.meter.num / this.meter.den));
-        };
-
-        this.isFull = function () {
-            let total = 0;
-            for (let note of this.notes) {
-                total += note.getDuration();
-            }
-            return (total === (this.meter.num / this.meter.den));
-        };
-
-        this.isEmpty = function () {
-            return (this.notes.length === 0);
-        };
-
-        this.drawClef = function (left) {
-            this.clefObj = this.paper.path(symbols.gClef);
-            let porteHeight = this.porteLiHe * 4;
-            let scaleFactor = porteHeight * (74 / 40) / this.clefObj.getBBox().height;
-            let trTop = (porteHeight - this.clefObj.getBBox().height * scaleFactor) / 2;
-            let translateStr = 't ' + left + ' ' + trTop;
-            let scaleStr = 's' + scaleFactor + ' 0 0';
-
-            this.clefObj.transform(translateStr + ' ' + scaleStr);
-            this.clefObj.attr({
-                fill: this.mainColor
-            });
-            return (this.clefObj.getBBox().width + this.porteLiHe);
+            this.refreshMeasure();
         };
 
         this.drawAccidentals = function (left) {
@@ -1131,6 +1147,86 @@
                 this.accidentalsGroup.add(accSymbol);
             }
             return (this.accidentalsGroup.getBBox().width + this.porteLiHe);
+        };
+
+        this.drawClef = function (left) {
+            this.clefObj = this.paper.path(symbols.gClef);
+            let porteHeight = this.porteLiHe * 4;
+            let scaleFactor = porteHeight * (74 / 40) / this.clefObj.getBBox().height;
+            let trTop = (porteHeight - this.clefObj.getBBox().height * scaleFactor) / 2;
+            let translateStr = 't ' + left + ' ' + trTop;
+            let scaleStr = 's' + scaleFactor + ' 0 0';
+
+            this.clefObj.transform(translateStr + ' ' + scaleStr);
+            this.clefObj.attr({
+                fill: this.mainColor
+            });
+            return (this.clefObj.getBBox().width + this.porteLiHe);
+        };
+
+        this.drawGuides = function (start, end) {
+            // draw upper & lower guide lines
+            let y;
+            this.guideGroup = this.paper.g();
+            for (let i = 1; i <= 5; i++) {
+                y = -i * this.porteLiHe;
+                let upperLine = this.paper.line(start, y, end, y);
+                this.guideGroup.add(upperLine);
+
+                y = (i + 4) * this.porteLiHe;
+                let lowerLine = this.paper.line(start, y, end, y);
+                this.guideGroup.add(lowerLine);
+            }
+            this.guideGroup.attr({
+                stroke: 'transparent',
+                strokeWidth: this.lineThickness
+            });
+
+            this.guideGroup.addClass('no-print');
+        };
+
+        this.drawMeasure = function () {
+            let left = 0;
+            this.mainGroup = this.paper.g();
+            this.mainGroup.addClass('main-group');
+            this.mainGroup.transform('t ' + this.startPos + ' ' + this.porteTop);
+
+            if (this.clefVisible) {
+                left += this.drawClef(left);
+            }
+            if (this.gAcciVisible) {
+                left += this.drawAccidentals(left);
+            }
+            if (this.meterVisible) {
+                left += this.drawMeter(left);
+            }
+
+            this.notesStartPos = left;
+
+            left += this.drawNotes(left);
+
+            this.drawGuides(this.notesStartPos, left);
+            this.drawStaff(left);
+
+            this.mainGroup.add(this.guideGroup);
+            this.mainGroup.add(this.staffGroup);
+
+            if (this.clefVisible) {
+                this.mainGroup.add(this.clefObj);
+            }
+            if (this.gAcciVisible) {
+                this.mainGroup.add(this.accidentalsGroup);
+            }
+            if (this.meterVisible) {
+                this.mainGroup.add(this.meterGroup);
+            }
+
+            this.mainGroup.add(this.notesGroup);
+            this.setBoundingBox(this.notesStartPos, left);
+
+            this.lastDrawnWidth = left;
+
+            return left;
         };
 
         this.drawMeter = function (left) {
@@ -1233,98 +1329,61 @@
             this.staffGroup.add(meEndLine);
         };
 
-        this.drawGuides = function (start, end) {
-            // draw upper & lower guide lines
-            let y;
-            this.guideGroup = this.paper.g();
-            for (let i = 1; i <= 5; i++) {
-                y = -i * this.porteLiHe;
-                let upperLine = this.paper.line(start, y, end, y);
-                this.guideGroup.add(upperLine);
-
-                y = (i + 4) * this.porteLiHe;
-                let lowerLine = this.paper.line(start, y, end, y);
-                this.guideGroup.add(lowerLine);
+        this.eraseMeasure = function () {
+            this.allYPos = [];
+            this.noteLefts = [];
+            if (this.mainGroup) {
+                this.mainGroup.remove();
+                this.mainGroup = null;
+                this.accidentalsGroup = null;
+                this.meterGroup = null;
+                this.staffGroup = null;
+                this.guideGroup = null;
+                this.notesGroup = null;
+                this.clefObj = null;
             }
-            this.guideGroup.attr({
-                stroke: 'transparent',
-                strokeWidth: this.lineThickness
-            });
-
-            this.guideGroup.addClass('no-print');
-        };
-
-        this.setBoundingBox = function (start, end) {
-            this.endPos = this.startPos + end;
-            this.box.top = this.porteTop - this.porteLiHe * 5;
-            this.box.right = this.endPos;
-            this.box.bottom = this.porteTop + this.porteLiHe * 9;
-            this.box.left = this.startPos + start;
-            // set y coords of all possible notes
-            for (let i = -10; i <= 18; i++) {
-                this.allYPos.push(this.porteTop + (this.porteLiHe / 2) * i);
-            }
-        };
-
-        this.drawMeasure = function () {
-            let left = 0;
-            this.mainGroup = this.paper.g();
-            this.mainGroup.addClass('main-group');
-            this.mainGroup.transform('t ' + this.startPos + ' ' + this.porteTop);
-
-            if (this.clefVisible) {
-                left += this.drawClef(left);
-            }
-            if (this.gAcciVisible) {
-                left += this.drawAccidentals(left);
-            }
-            if (this.meterVisible) {
-                left += this.drawMeter(left);
-            }
-
-            this.notesStartPos = left;
-
-            left += this.drawNotes(left);
-
-            this.drawGuides(this.notesStartPos, left);
-            this.drawStaff(left);
-
-            this.mainGroup.add(this.guideGroup);
-            this.mainGroup.add(this.staffGroup);
-
-            if (this.clefVisible) {
-                this.mainGroup.add(this.clefObj);
-            }
-            if (this.gAcciVisible) {
-                this.mainGroup.add(this.accidentalsGroup);
-            }
-            if (this.meterVisible) {
-                this.mainGroup.add(this.meterGroup);
-            }
-
-            this.mainGroup.add(this.notesGroup);
-            this.setBoundingBox(this.notesStartPos, left);
-
-            this.lastDrawnWidth = left;
-
-            return left;
-        };
-
-        this.shiftPosition = function (offset) {
-            this.startPos += offset;
-            this.mainGroup.transform('t ' + this.startPos + ' ' + this.porteTop);
         };
 
         this.insertAndDrawAt = function (pos, note) {
             this.notes.splice(pos, 0, note);
-            this.eraseMeasure();
-            let previousWid = this.lastDrawnWidth;
-            this.drawMeasure();
-            let currentWid = this.lastDrawnWidth;
-            this.parentSatir.notifyWidthChange(this.arrIdx, currentWid - previousWid);
+            mParams.totalNoteCount += 1;
+            this.refreshMeasure();
+
+            if (mParams.totalNoteCount === 8) {
+                allowNewInsertion(false);
+            } else {
+                if (this.isFull() || this.isExceeded()) {
+                    let meter = this.getMeter();
+                    let acci = this.getAccidentalsStr();
+                    this.parentSatir.requestNewMeasure(this.arrIdx, this.startPos + this.lastDrawnWidth, meter, acci);
+                }
+            }
+        };
+
+        this.isEmpty = function () {
+            return (this.notes.length === 0);
+        };
+
+        this.isExceeded = function () {
+            let total = 0;
+            for (let note of this.notes) {
+                total += note.getDuration();
+            }
+            return (total > (this.meter.num / this.meter.den));
+        };
+
+        this.isFull = function () {
+            let total = 0;
+            for (let note of this.notes) {
+                total += note.getDuration();
+            }
+            return (total === (this.meter.num / this.meter.den));
         };
 
         this.mouseOver = function (x, y) {
+            if (!mParams.allowInsert) {
+                return;
+            }
             let scaleFactor, translateStr, scaleStr, width, height, tTop;
             if ((x >= this.box.left) && (x <= this.box.right) && (y >= this.box.top) && (y <= this.box.bottom)) {
                 switch (mParams.type) {
@@ -1506,6 +1565,9 @@
         };
 
         this.mouseClick = function (x, y) {
+            if (!mParams.allowInsert) {
+                return;
+            }
             if ((x >= this.box.left) && (x <= this.box.right) && (y >= this.box.top) && (y <= this.box.bottom)) {
                 let i, note;
                 switch (mParams.type) {
@@ -1560,6 +1622,19 @@
                 }
             }
         };
+
+        this.refreshMeasure = function () {
+            this.eraseMeasure();
+            let previousWid = this.lastDrawnWidth;
+            this.drawMeasure();
+            let currentWid = this.lastDrawnWidth;
+            this.parentSatir.notifyWidthChange(this.arrIdx, currentWid - previousWid);
+        };
+
+        this.shiftPosition = function (offset) {
+            this.startPos += offset;
+            this.mainGroup.transform('t ' + this.startPos + ' ' + this.porteTop);
+        };
     }
 
     function SatirObject(satirNo, paper, configs, left, top, width, parentScore) {
@@ -1572,11 +1647,12 @@
         this.width = width;
         this.measures = [];
         this.lastMeasureIdx = 0;
+        this.lastMeasureLeft = this.left;
 
         this.getMWParams = function () {
             return {
-                startLeft: 0,
-                startTop: 0,
+                startLeft: this.lastMeasureLeft,
+                startTop: this.top,
                 cfg: this.configs,
                 endPos: this.width + this.left,
                 paper: this.paper,
@@ -1586,22 +1662,15 @@
         };
 
         this.addMeasure = function (measure) {
-            let sParams = this.getMWParams();
-            measure.setSParams(sParams);
             measure.setArrIdx(this.lastMeasureIdx);
             this.lastMeasureIdx += 1;
             this.measures.push(measure);
         };
 
         this.drawSatir = function () {
-            let sParams = this.getMWParams();
-            let leftOffset = this.left;
-
-            sParams.startLeft = leftOffset;
-            sParams.startTop = this.top;
 
             for (let i = 0; i < this.measures.length; i++) {
-                this.measures[i].setSParams(sParams);
+                this.measures[i].setSParams(this.getMWParams());
                 if (i === 0) {
                     this.measures[i].setClefVisibility(true);
                     this.measures[i].setGAcciVisibility(true);
@@ -1609,8 +1678,7 @@
                         this.measures[i].setMeterVisibility(true);
                     }
                 }
-                leftOffset += this.measures[i].drawMeasure();
-                sParams.startLeft = leftOffset;
+                this.lastMeasureLeft += this.measures[i].drawMeasure();
             }
         };
 
@@ -1629,6 +1697,27 @@
             this.drawSatir();
         };
 
+        this.deleteSatirNote = function (measureIdx, noteIdx) {
+            this.measures[measureIdx].deleteNoteAt(noteIdx);
+        };
+
+        this.deleteMeasureAtIdx = function (measureIdx, left) {
+            this.measures.splice(measureIdx, 1);
+            this.lastMeasureIdx -= 1;
+            this.lastMeasureLeft = left;
+        };
+
+        this.requestNewMeasure = function (measureArrIdx, left, meter, acci) {
+            if (this.measures.length > measureArrIdx + 1) {
+                return;
+            }
+            this.lastMeasureLeft = left;
+            let measure = new Measure(meter, acci);
+            measure.setSParams(this.getMWParams());
+            this.lastMeasureLeft += measure.drawMeasure();
+            this.addMeasure(measure);
+        };
+
         this.handleMouse = function (x, y) {
             for (let measure of this.measures) {
                 measure.mouseOver(x, y);
@@ -1639,10 +1728,6 @@
             for (let measure of this.measures) {
                 measure.mouseClick(x, y);
             }
-        };
-
-        this.deleteSatirNote = function (measureIdx, noteIdx) {
-            this.measures[measureIdx].deleteNoteAt(noteIdx);
         };
     }
 
