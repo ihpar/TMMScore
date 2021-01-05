@@ -554,7 +554,7 @@
         dvGroupDurs.className = 'btn-group';
 
         let durParams = [
-            {durVal: 'n1', img: 'nd1.svg'},
+            //{durVal: 'n1', img: 'nd1.svg'},
             {durVal: 'n2', img: 'nd2.svg'},
             {durVal: 'n4', img: 'nd4.svg'},
             {durVal: 'n8', img: 'nd8.svg'},
@@ -580,8 +580,8 @@
         dvGroupRests.className = 'btn-group';
 
         let restParams = [
-            {val: 'r1', dur: "1/1", img: 'rest1.svg'},
-            {val: 'r2', dur: "1/2", img: 'rest2.svg'},
+            //{val: 'r1', dur: "1/1", img: 'rest1.svg'},
+            //{val: 'r2', dur: "1/2", img: 'rest2.svg'},
             {val: 'r4', dur: "1/4", img: 'rest4.svg'},
             {val: 'r8', dur: "1/8", img: 'rest8.svg'},
             {val: 'r16', dur: "1/16", img: 'rest16.svg'},
@@ -829,6 +829,10 @@
                     }
                 }
 
+                let bodyRect = paper.rect(relLeft, 0 - porteLiHe / 2, porteLiHe * 1.2, porteLiHe);
+                bodyRect.attr({fill: 'transparent'});
+                noteG.add(bodyRect);
+
                 let noteBody = paper.path(path);
                 let translateStr = 't ' + relLeft + ' ' + 0;
                 let scaleFactor = porteLiHe / 5;
@@ -969,6 +973,13 @@
         // setters
         this.setArrIdx = function (idx) {
             this.arrIdx = idx;
+            if (this.notesGroup) {
+                let noteIdx = 0;
+                for (let note of this.notesGroup.children()) {
+                    note.attr({smn: [this.satirNo, this.arrIdx, noteIdx].join(',')});
+                    noteIdx += 1;
+                }
+            }
         };
 
         this.setBoundingBox = function (start, end) {
@@ -1118,7 +1129,7 @@
             }
             if (this.isEmpty() && this.arrIdx > 0) {
                 this.eraseMeasure();
-                this.parentSatir.deleteMeasureAtIdx(this.arrIdx, this.startPos);
+                this.parentSatir.deleteMeasureAtIdx(this.arrIdx, this.startPos, this.lastDrawnWidth);
                 return;
             }
             this.refreshMeasure();
@@ -1701,10 +1712,14 @@
             this.measures[measureIdx].deleteNoteAt(noteIdx);
         };
 
-        this.deleteMeasureAtIdx = function (measureIdx, left) {
+        this.deleteMeasureAtIdx = function (measureIdx, left, width) {
             this.measures.splice(measureIdx, 1);
             this.lastMeasureIdx -= 1;
             this.lastMeasureLeft = left;
+            for (let i = measureIdx; i < this.measures.length; i++) {
+                this.measures[i].setArrIdx(i);
+                this.measures[i].shiftPosition(-width);
+            }
         };
 
         this.requestNewMeasure = function (measureArrIdx, left, meter, acci) {
