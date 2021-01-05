@@ -1640,6 +1640,33 @@
             this.drawMeasure();
             let currentWid = this.lastDrawnWidth;
             this.parentSatir.notifyWidthChange(this.arrIdx, currentWid - previousWid);
+            let symbol, symbolR;
+            if (mParams.ghostNote.symbol) {
+                symbol = mParams.ghostNote.symbol.attr('path');
+                mParams.ghostNote.symbol.remove();
+                mParams.ghostNote.symbol = this.paper.path(symbol);
+                mParams.ghostNote.symbol.attr({
+                    fill: 'transparent'
+                });
+                mParams.ghostNote.symbol.addClass('no-print');
+            }
+            if (mParams.ghostNote.symbolR) {
+                symbolR = mParams.ghostNote.symbolR.attr('path');
+                mParams.ghostNote.symbolR.remove();
+                mParams.ghostNote.symbolR = this.paper.path(symbolR);
+                mParams.ghostNote.symbolR.attr({
+                    fill: 'transparent'
+                });
+                mParams.ghostNote.symbolR.addClass('no-print');
+            }
+            if (mParams.ghostNote.symbolDot) {
+                mParams.ghostNote.symbolDot.remove();
+                mParams.ghostNote.symbolDot = this.paper.circle(-2, -2, 1);
+                mParams.ghostNote.symbolDot.attr({
+                    fill: 'transparent'
+                });
+                mParams.ghostNote.symbolDot.addClass('no-print');
+            }
         };
 
         this.shiftPosition = function (offset) {
@@ -1679,6 +1706,7 @@
         };
 
         this.drawSatir = function () {
+            this.lastMeasureLeft = this.left;
 
             for (let i = 0; i < this.measures.length; i++) {
                 this.measures[i].setSParams(this.getMWParams());
