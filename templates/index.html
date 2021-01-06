@@ -10,14 +10,10 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <script type="text/javascript" src="{{ url_for('static', filename='js/snap.svg.js') }}"></script>
-    <script type="text/javascript" src="static/js/Tone.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/Tone.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/site.css') }}">
 </head>
 <body>
-<div style="position:absolute; top:-100px; left:-100px; width:1px; height:1px; overflow:hidden;">
-    <img src="static/img/sound_on.svg" width="1" height="1" alt="on"/>
-    <img src="static/img/sound_off.svg" width="1" height="1" alt="off"/>
-</div>
 <div class="dv-main-wrapper">
     <div class="dv-center-content">
         <div id="dv-top">
@@ -27,6 +23,8 @@
 </div>
 <script type="text/javascript">
     "use strict";
+
+    const Tone = require("tone");
 
     const notePositions = {
         b2: 9,
@@ -423,7 +421,7 @@
 
         if (!mParams.soundActive) {
             mParams.soundActive = true;
-            sender.innerHTML = '<img alt="sound" src="static/img/sound_on.svg" style="height: 80%;">';
+            sender.firstElementChild.classList.remove('sound-mute');
 
             if (!mParams.soundStarted) {
                 await Tone.start();
@@ -432,7 +430,7 @@
 
         } else {
             mParams.soundActive = false;
-            sender.innerHTML = '<img alt="sound" src="static/img/sound_off.svg" style="height: 80%;">';
+            sender.firstElementChild.classList.add('sound-mute');
         }
     }
 
@@ -463,7 +461,12 @@
         tabIndex += 1;
         soundBtn.tabIndex = tabIndex;
         soundBtn.className = 'tmm-menu-btn-no';
-        soundBtn.innerHTML = '<img alt="sound" src="static/img/sound_off.svg" style="height: 80%;">';
+        //soundBtn.innerHTML = '<img alt="sound" src="static/img/sound_off.svg" style="height: 80%;">';
+        soundBtn.innerHTML = '<div class="sound sound-mute">' +
+            '<div class="sound--icon"></div>' +
+            '<div class="sound--wave sound--wave_one"></div>' +
+            '<div class="sound--wave sound--wave_two"></div>' +
+            '</div>';
         soundBtn.addEventListener('click', function (e) {
             soundButtonClick(e, this);
         });
@@ -1954,15 +1957,16 @@
 
     const sampler = new Tone.Sampler({
         urls: {
-            'A4': 'k440.mp3',
+            A4: 'k440.mp3',
         },
-        release: 1,
         baseUrl: 'static/samples/',
+        onload: () => {
+            // sampler.triggerAttackRelease(["C4", "E4", "G4"], 0.5);
+            sampler.triggerAttackRelease('A4', 2);
+        }
     }).toDestination();
 
-    Tone.loaded().then(() => {
-        sampler.triggerAttackRelease(['Eb4', 'G4', 'Bb4'], 4);
-    });
+
 
 </script>
 </body>
