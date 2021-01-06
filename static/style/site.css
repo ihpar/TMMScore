@@ -243,69 +243,13 @@ body ::-webkit-scrollbar-thumb:hover {
 }
 
 .sound {
-    width: 1.8em;
-    height: 1.8em;
-    position: relative;
-    cursor: pointer;
-    display: inline-block;
-}
-
-.sound--icon {
-    background-image: url('../img/speaker.svg');
+    background-image: url('../img/sound_off.svg');
     background-size: contain;
     background-position: left center;
     background-repeat: no-repeat;
-    width: 60%;
+    width: 2em;
     height: 100%;
-    display: block;
-    opacity: 1;
-    transition: all 20ms;
-    transition-delay: 300ms;
-}
-
-.sound--wave {
-    position: absolute;
-    border: 2px solid transparent;
-    border-right: 2px solid #243041;
-    border-radius: 50%;
-    margin: auto;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    opacity: 1;
-    transition: all 20ms;
-    transition-delay: 300ms;
-}
-
-.sound--wave_one {
-    width: 50%;
-    height: 50%;
-}
-
-.sound--wave_two {
-    width: 75%;
-    height: 75%;
-}
-
-.sound-mute .sound--icon {
-    opacity: 0.2;
-}
-
-.sound-mute .sound--wave {
-    border-radius: 0;
-    width: 50%;
-    height: 50%;
-    border-width: 0 2px 0 0;
-    opacity: 0.2;
-}
-
-.sound-mute .sound--wave_one {
-    transform: rotate(45deg) translate3d(0, -50%, 0);
-}
-
-.sound-mute .sound--wave_two {
-    transform: rotate(-45deg) translate3d(0, 50%, 0);
+    transition: all 200ms;
 }
 
 @media screen and (max-width: 1030px) {

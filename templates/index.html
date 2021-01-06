@@ -12,8 +12,15 @@
     <script type="text/javascript" src="{{ url_for('static', filename='js/snap.svg.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/soundfont-player.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/site.css') }}">
+    <style type="text/css">
+
+    </style>
 </head>
 <body>
+<div style="position: absolute; left: -100px; top:-100px; width:1px; height: 1px; overflow: hidden">
+    <img src="static/img/sound_on.svg" alt="son" style="width:1px; height: 1px;">
+    <img src="static/img/sound_off.svg" alt="sof" style="width:1px; height: 1px;">
+</div>
 <div class="dv-main-wrapper">
     <div class="dv-center-content">
         <div id="dv-top">
@@ -185,7 +192,7 @@
         allowInsert: true,
         soundStarted: false,
         soundActive: false,
-        instrument:null
+        instrument: null
     };
 
     let cNoteWidths = {};
@@ -411,7 +418,6 @@
     }
 
     function besteleButtonClick(e, sender) {
-        console.log(sender);
         e.stopPropagation();
     }
 
@@ -422,21 +428,25 @@
 
         if (!mParams.soundActive) {
             mParams.soundActive = true;
-            sender.firstElementChild.classList.remove('sound-mute');
+            setTimeout(function () {
+                sender.firstElementChild.style.backgroundImage = 'url("static/img/sound_on.svg")';
+            }, 200);
 
             if (!mParams.soundStarted) {
                 mParams.soundStarted = true;
                 setTimeout(function () {
                     Soundfont.instrument(new AudioContext(), 'acoustic_grand_piano', {soundfont: 'FluidR3_GM'}).then(function (instrument) {
                         mParams.instrument = instrument;
+                        console.log('ready');
                     });
-                }, 600);
-
+                }, 300);
             }
 
         } else {
             mParams.soundActive = false;
-            sender.firstElementChild.classList.add('sound-mute');
+            setTimeout(function () {
+                sender.firstElementChild.style.backgroundImage = 'url("static/img/sound_off.svg")';
+            }, 200);
         }
     }
 
@@ -468,11 +478,7 @@
         soundBtn.tabIndex = tabIndex;
         soundBtn.className = 'tmm-menu-btn-no';
         //soundBtn.innerHTML = '<img alt="sound" src="static/img/sound_off.svg" style="height: 80%;">';
-        soundBtn.innerHTML = '<div class="sound sound-mute">' +
-            '<div class="sound--icon"></div>' +
-            '<div class="sound--wave sound--wave_one"></div>' +
-            '<div class="sound--wave sound--wave_two"></div>' +
-            '</div>';
+        soundBtn.innerHTML = '<div class="sound"></div>';
         soundBtn.addEventListener('click', function (e) {
             soundButtonClick(e, this);
         });
