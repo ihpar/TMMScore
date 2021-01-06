@@ -249,7 +249,7 @@ body ::-webkit-scrollbar-thumb:hover {
     background-repeat: no-repeat;
     width: 2em;
     height: 100%;
-    transition: all 200ms;
+    transition: all 400ms;
 }
 
 @media screen and (max-width: 1030px) {

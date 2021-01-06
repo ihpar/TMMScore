@@ -433,24 +433,27 @@
             mParams.soundActive = true;
             setTimeout(function () {
                 sender.firstElementChild.style.backgroundImage = 'url("static/img/sound_on.svg")';
-            }, 200);
+            }, 210);
 
             if (!mParams.soundStarted) {
                 mParams.soundStarted = true;
-                setTimeout(function () {
-                    Soundfont.instrument(new AudioContext(), 'acoustic_grand_piano', {soundfont: 'FluidR3_GM', gain: 9}).then(function (instrument) {
-                        mParams.instrument = instrument;
-                        mParams.canUseSound = true;
-                        console.log('ready');
-                    });
-                }, 300);
+
+                Soundfont.instrument(
+                    new AudioContext(),
+                    'acoustic_grand_piano',
+                    {soundfont: 'FluidR3_GM', gain: 9}
+                ).then(function (instrument) {
+                    mParams.instrument = instrument;
+                    mParams.canUseSound = true;
+                });
+
             }
 
         } else {
             mParams.soundActive = false;
             setTimeout(function () {
                 sender.firstElementChild.style.backgroundImage = 'url("static/img/sound_off.svg")';
-            }, 200);
+            }, 210);
         }
     }
 
