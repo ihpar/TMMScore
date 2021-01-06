@@ -11,6 +11,7 @@
 
     <script type="text/javascript" src="{{ url_for('static', filename='js/snap.svg.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/soundfont-player.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/tune.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/site.css') }}">
     <style type="text/css">
 
@@ -192,7 +193,8 @@
         allowInsert: true,
         soundStarted: false,
         soundActive: false,
-        instrument: null
+        instrument: null,
+        canUseSound: false
     };
 
     let cNoteWidths = {};
@@ -435,8 +437,9 @@
             if (!mParams.soundStarted) {
                 mParams.soundStarted = true;
                 setTimeout(function () {
-                    Soundfont.instrument(new AudioContext(), 'acoustic_grand_piano', {soundfont: 'FluidR3_GM'}).then(function (instrument) {
+                    Soundfont.instrument(new AudioContext(), 'acoustic_grand_piano', {soundfont: 'FluidR3_GM', gain: 9}).then(function (instrument) {
                         mParams.instrument = instrument;
+                        mParams.canUseSound = true;
                         console.log('ready');
                     });
                 }, 300);
@@ -1966,6 +1969,23 @@
 
     let tmmScore = new TmmScore('#dv-tmm-wrapper');
     tmmScore.begin();
+
+    let tune = new Tune();
+    tune.loadScale('turkish_aeu');
+    tune.tonicize(220);
+    tune.mode.output = 'MIDI';
+
+    function playOctave(i) {
+        if (i === 25) {
+            return;
+        }
+        console.log(tune.note(i, 1));
+        mParams.instrument.start(tune.note(i, 1), 0, {duration: 0.3});
+        i += 1;
+        setTimeout(function () {
+            playOctave(i);
+        }, 500);
+    }
 
 </script>
 </body>
