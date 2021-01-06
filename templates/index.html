@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <script type="text/javascript" src="{{ url_for('static', filename='js/snap.svg.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/Tone.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/soundfont-player.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/site.css') }}">
 </head>
 <body>
@@ -23,8 +23,6 @@
 </div>
 <script type="text/javascript">
     "use strict";
-
-    const Tone = require("tone");
 
     const notePositions = {
         b2: 9,
@@ -186,10 +184,13 @@
         totalNoteCount: 0,
         allowInsert: true,
         soundStarted: false,
-        soundActive: false
+        soundActive: false,
+        instrument:null
     };
 
     let cNoteWidths = {};
+
+    let piano;
 
     function setMakam(makam, accidentals) {
         document.getElementById('selectedMakamName').innerHTML = makam;
@@ -414,7 +415,7 @@
         e.stopPropagation();
     }
 
-    async function soundButtonClick(e, sender) {
+    function soundButtonClick(e, sender) {
         setTimeout(function () {
             sender.blur();
         }, 200);
@@ -424,8 +425,13 @@
             sender.firstElementChild.classList.remove('sound-mute');
 
             if (!mParams.soundStarted) {
-                await Tone.start();
                 mParams.soundStarted = true;
+                setTimeout(function () {
+                    Soundfont.instrument(new AudioContext(), 'acoustic_grand_piano', {soundfont: 'FluidR3_GM'}).then(function (instrument) {
+                        mParams.instrument = instrument;
+                    });
+                }, 600);
+
             }
 
         } else {
@@ -1954,19 +1960,6 @@
 
     let tmmScore = new TmmScore('#dv-tmm-wrapper');
     tmmScore.begin();
-
-    const sampler = new Tone.Sampler({
-        urls: {
-            A4: 'k440.mp3',
-        },
-        baseUrl: 'static/samples/',
-        onload: () => {
-            // sampler.triggerAttackRelease(["C4", "E4", "G4"], 0.5);
-            sampler.triggerAttackRelease('A4', 2);
-        }
-    }).toDestination();
-
-
 
 </script>
 </body>
