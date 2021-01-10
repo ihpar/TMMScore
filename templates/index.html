@@ -445,7 +445,7 @@
                 ).then(function (instrument) {
                     mParams.instrument = instrument;
                     mParams.canUseSound = true;
-                });
+                }).catch(err => console.log('Sound font error!', err));
 
             }
 
@@ -1991,33 +1991,65 @@
         }, 500);
     }
 
-    let roots = {0: 'la', 9: 'si', 13: 'do', 22: 're', 31: 'mi', 35: 'fa', 44: 'sol'};
-
-    let topKoma = 0,
-        koma = 0,
-        lastRoot;
-    for (let i = 0; i < 24; i++) {
-        if (topKoma in roots) {
-            lastRoot = roots[topKoma];
-        }
-        console.log(lastRoot, topKoma % 9);
-        let diff = Math.floor(1000 * (tune.note(i + 1) - tune.note(i))) / 1000;
-        switch (diff) {
-            case 0.234:
-                koma = 1;
-                break;
-            case 0.667:
-                koma = 3;
-                break;
-            case 0.902:
-                koma = 4;
-                break;
-            default:
-                koma = null;
-                break;
-        }
-        topKoma += koma;
+    for (let i = 0; i <= 24; i++) {
+        console.log(tune.note(i));
     }
+
+    const sharps = {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0,
+        7: 0,
+        8: 0,
+        9: 0
+    };
+
+    const flats = {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0,
+        7: 0,
+        8: 0,
+        9: 0
+    };
+
+    const tmmPitches = {
+        si2: 0,
+        do3: 0,
+        re3: 0,
+        mi3: 0,
+        fa3: 0,
+        sol3: 0,
+        la3: 57,
+        si3: 0,
+        do4: 0,
+        re4: 0,
+        mi4: 0,
+        fa4: 0,
+        sol4: 0,
+        la4: 69,
+        si4: 0,
+        do5: 0,
+        re5: 0,
+        mi5: 0,
+        fa5: 0,
+        sol5: 0,
+        la5: 81,
+        si5: 0,
+        do6: 0,
+        re6: 0,
+        mi6: 0,
+        fa6: 0,
+        sol6: 0,
+        la6: 93,
+        si6: 0
+    };
 
 </script>
 </body>
