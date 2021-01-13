@@ -1935,3 +1935,56 @@ function TmmScore(containerSelector) {
     */
     tmmScore.drawScore();
 })();
+
+
+let tune = new Tune();
+    tune.loadScale('turkish_aeu');
+    tune.tonicize(220);
+    tune.mode.output = 'MIDI';
+
+    const nPitches = [
+        47.039100017,
+        47.941349974,
+        49.980449991,
+        52.019550008,
+        52.921799965,
+        54.960899982,
+        57.0,
+        59.039100017,
+        59.941349974,
+        61.980449991,
+        64.019550008,
+        64.921799965,
+        66.960899982,
+        69.0,
+        71.039100017,
+        71.941349974,
+        73.980449991,
+        76.019550008,
+        76.921799965,
+        78.960899982,
+        81.0,
+        83.039100017,
+        83.941349974,
+        85.980449991,
+        88.019550008,
+        88.921799965,
+        90.960899982,
+        93.0,
+        95.039100017
+    ];
+
+    function playOctave(i) {
+        if (i === nPitches.length) {
+            return;
+        }
+        mParams.instrument.start(nPitches[i], 0, {duration: 0.4});
+        i += 1;
+        setTimeout(function () {
+            playOctave(i);
+        }, 500);
+    }
+
+    for (let i = 0; i < 25; i++) {
+        console.log(tune.note(i + 2) - tune.note(i));
+    }

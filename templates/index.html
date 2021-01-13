@@ -178,9 +178,53 @@
         fin: 'M 3.61467 19.0499 L 1.58753 19.0499 L 1.58753 0 L 3.61467 0 Z M 0.439668 19.0499 L 2.1e-05 19.0499 L 2.1e-05 0 L 0.439668 0 Z'
     };
 
+    const tmmKomas = {
+        '1': 0.235,
+        '2': 0.445, // opt
+        '3': 0.667, // opt
+        '4': 0.902,
+        '5': 1.137,
+        '6': 1.364, // opt
+        '7': 1.592, // opt
+        '8': 1.804,
+        '9': 2.039
+    };
+
+    const tmmMidiPitches = {
+        si2: 47.039100017,
+        do3: 47.941349974,
+        re3: 49.980449991,
+        mi3: 52.019550008,
+        fa3: 52.921799965,
+        sol3: 54.960899982,
+        la3: 57.0,
+        si3: 59.039100017,
+        do4: 59.941349974,
+        re4: 61.980449991,
+        mi4: 64.019550008,
+        fa4: 64.921799965,
+        sol4: 66.960899982,
+        la4: 69.0,
+        si4: 71.039100017,
+        do5: 71.941349974,
+        re5: 73.980449991,
+        mi5: 76.019550008,
+        fa5: 76.921799965,
+        sol5: 78.960899982,
+        la5: 81.0,
+        si5: 83.039100017,
+        do6: 83.941349974,
+        re6: 85.980449991,
+        mi6: 88.019550008,
+        fa6: 88.921799965,
+        sol6: 90.960899982,
+        la6: 93.0,
+        si6: 95.039100017
+    };
+
     let mParams = {
         makam: {name: 'Hicaz', accidentals: ['B4b4', 'F5#4', 'C5#4']},
-        usul: {name: 'Aksak', meter: [9, 8]},
+        usul: {name: 'Aksak', meter: [9, 8], tempo: 124},
         acci: null,
         duration: '1/4',
         ghostNote: {symbol: null, symbolR: null, symbolDot: null, width: 0, height: 0},
@@ -199,20 +243,19 @@
 
     let cNoteWidths = {};
 
-    let piano;
-
     function setMakam(makam, accidentals) {
         document.getElementById('selectedMakamName').innerHTML = makam;
         mParams.makam.name = makam;
         mParams.makam.accidentals = accidentals.slice();
     }
 
-    function setUsul(usuName, meter) {
+    function setUsul(usuName, meter, tempo) {
         document.getElementById('selectedUsulName').innerHTML = usuName;
         document.getElementById('selectedUsulNum').innerHTML = meter[0];
         document.getElementById('selectedUsulDen').innerHTML = meter[1];
         mParams.usul.name = usuName;
         mParams.usul.meter = meter.slice();
+        mParams.usul.tempo = tempo;
     }
 
     function tmmMenuButtonClick(e, paper) {
@@ -405,7 +448,7 @@
         }
     }
 
-    function noteGClick(e, sender, stCol, selCol) {
+    function noteGClick(e, sender, stCol, selCol, note) {
         if (sender.attr('selected') === 'yes') {
             sender.attr({fill: stCol, selected: 'no'});
             mParams.highElem = null;
@@ -416,6 +459,7 @@
             }
             sender.attr({fill: selCol, selected: 'yes'});
             mParams.highElem = sender;
+            playNote(note);
         }
     }
 
@@ -455,6 +499,29 @@
                 sender.firstElementChild.style.backgroundImage = 'url("static/img/sound_off.svg")';
             }, 210);
         }
+    }
+
+    function playNote(note) {
+        if (!mParams.soundActive || !mParams.canUseSound) {
+            return;
+        }
+        let noteBare = note.getNote();
+        if (noteBare === 'rest') {
+            return;
+        }
+        let acc = note.getAcc();
+        let dur = note.getDuration();
+        let tempo = mParams.usul.tempo;
+        let pitch = tmmMidiPitches[noteBare];
+        if (acc) {
+            let amount = tmmKomas[acc.substr(-1)];
+            if (acc.charAt(0) === 'b') {
+                amount *= -1;
+            }
+            pitch += amount;
+        }
+        let duration = (60 / tempo) / ((1 / 4) / dur);
+        mParams.instrument.start(pitch, 0, {duration: duration});
     }
 
     function allowNewInsertion(allow) {
@@ -526,11 +593,13 @@
                     setMakam(selectedMakam, accidentals);
                     let usul = 'Aksak';
                     let meter = [9, 8];
+                    let tempo = 124;
                     if (selectedMakam === 'Nihâvent') {
                         usul = 'Düyek';
                         meter = [8, 8];
+                        tempo = 160;
                     }
-                    setUsul(usul, meter);
+                    setUsul(usul, meter, tempo);
                     tmmScore.changeScoreMakamAndMeter(selectedMakam, accidentals, usul, meter);
                 }
                 makamInput.blur();
@@ -540,8 +609,8 @@
         makamInput.appendChild(ddMakam);
 
         let tmmUsuls = [
-            {name: 'Aksak', meter: [9, 8]},
-            {name: 'Düyek', meter: [8, 8]}
+            {name: 'Aksak', meter: [9, 8], tempo: 124},
+            {name: 'Düyek', meter: [8, 8], tempo: 160}
         ];
 
         let meterInput = document.createElement('div');
@@ -569,12 +638,14 @@
                 '<span class="usulName">' + u.name + '</span>';
             ddItem.setAttribute('data-meter', JSON.stringify(u.meter));
             ddItem.setAttribute('data-usul', JSON.stringify(u.name));
+            ddItem.setAttribute('data-tempo', JSON.stringify(u.tempo));
             ddItem.addEventListener('click', function (e) {
                 let sender = e.currentTarget;
                 let meter = JSON.parse(sender.getAttribute('data-meter'));
                 let usul = JSON.parse(sender.getAttribute('data-usul'));
+                let tempo = parseInt(sender.getAttribute('data-tempo'));
                 if (mParams.usul.name !== usul) {
-                    setUsul(usul, meter);
+                    setUsul(usul, meter, tempo);
                     let makam, accidentals;
                     if (usul === 'Aksak') {
                         makam = 'Hicaz';
@@ -666,27 +737,6 @@
             dvGroupRests.appendChild(btn);
         }
 
-        /*
-        let dvGroupLocs = document.createElement('div');
-        dvGroupLocs.className = 'btn-group';
-
-        let locParams = [
-            {val: 'repL', img: 'repLeft.svg'},
-            {val: 'repR', img: 'repRight.svg'},
-            {val: 'volta1', img: 'rep1.svg'},
-            {val: 'volta2', img: 'rep2.svg'},
-            {val: 'segno', img: 'segno.svg'},
-            {val: 'fin', img: 'fin.svg'}
-        ];
-
-        for (let loc of locParams) {
-            let btn = document.createElement('div');
-            btn.className = 'tmm-menu-btn loc-btn';
-            btn.setAttribute('data-loc-val', loc.val);
-            btn.innerHTML = '<img alt="' + loc.val + '" src="static/img/' + loc.img + '">';
-            dvGroupLocs.appendChild(btn);
-        }
-        */
         let dvUIBtns = document.createElement('div');
         dvUIBtns.className = 'btn-group';
 
@@ -708,7 +758,6 @@
         scoreMenu.appendChild(dvGroupDurs);
         scoreMenu.appendChild(dvGroupRests);
         scoreMenu.appendChild(dvUIBtns);
-        // scoreMenu.appendChild(dvGroupLocs);
 
         document.querySelector(containerSelector).prepend(scoreMenu);
 
@@ -1376,7 +1425,7 @@
                 let noteG = note.drawNote(this.paper, this.porteLiHe, this.lineThickness, leftMargin, 0, this.porteLineColor, acci);
                 noteG.attr({fill: color, smn: [this.satirNo, this.arrIdx, noteIdx].join(',')});
                 noteG.click(function (e) {
-                    noteGClick(e, this, color, highColor);
+                    noteGClick(e, this, color, highColor, note);
                     e.stopPropagation();
                 });
                 this.notesGroup.add(noteG);
@@ -1439,6 +1488,8 @@
                     this.parentSatir.requestNewMeasure(this.arrIdx, this.startPos + this.lastDrawnWidth, meter, acci);
                 }
             }
+
+            playNote(note);
         };
 
         this.isEmpty = function () {
@@ -1903,11 +1954,12 @@
         this.initScore = function () {
             let meter = [9, 8],
                 usul = 'Aksak',
+                tempo = 124,
                 accidentals = ['Si4b4', 'Fa5#4', 'Do5#4'],
                 makam = 'Hicaz';
 
             setMakam(makam, accidentals);
-            setUsul(usul, meter);
+            setUsul(usul, meter, tempo);
 
             this.satirlar = [];
 
@@ -1973,83 +2025,6 @@
 
     let tmmScore = new TmmScore('#dv-tmm-wrapper');
     tmmScore.begin();
-
-    let tune = new Tune();
-    tune.loadScale('turkish_aeu');
-    tune.tonicize(220);
-    tune.mode.output = 'MIDI';
-
-    function playOctave(i) {
-        if (i === 25) {
-            return;
-        }
-        console.log(tune.note(i, 1));
-        mParams.instrument.start(tune.note(i, 1), 0, {duration: 0.3});
-        i += 1;
-        setTimeout(function () {
-            playOctave(i);
-        }, 500);
-    }
-
-    for (let i = 0; i <= 24; i++) {
-        console.log(tune.note(i));
-    }
-
-    const sharps = {
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-        5: 0,
-        6: 0,
-        7: 0,
-        8: 0,
-        9: 0
-    };
-
-    const flats = {
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-        5: 0,
-        6: 0,
-        7: 0,
-        8: 0,
-        9: 0
-    };
-
-    const tmmPitches = {
-        si2: 0,
-        do3: 0,
-        re3: 0,
-        mi3: 0,
-        fa3: 0,
-        sol3: 0,
-        la3: 57,
-        si3: 0,
-        do4: 0,
-        re4: 0,
-        mi4: 0,
-        fa4: 0,
-        sol4: 0,
-        la4: 69,
-        si4: 0,
-        do5: 0,
-        re5: 0,
-        mi5: 0,
-        fa5: 0,
-        sol5: 0,
-        la5: 81,
-        si5: 0,
-        do6: 0,
-        re6: 0,
-        mi6: 0,
-        fa6: 0,
-        sol6: 0,
-        la6: 93,
-        si6: 0
-    };
 
 </script>
 </body>
