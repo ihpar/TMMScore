@@ -529,8 +529,8 @@
         let note = songObj[0];
         let tail = songObj.slice(1);
         if (!tail) return;
+        console.log(note);
         let wait = playNote(note) * 1000;
-        console.log(wait);
         setTimeout(function () {
             playWhole(tail);
         }, wait);
@@ -794,6 +794,7 @@
         this.durDen = parseInt(durParts[1]);
         this.isDotted = (this.durNum === 3);
         this.isRest = (pitch.toLowerCase() === 'rest');
+        this.hasStepLines = false;
 
         if (this.isDotted) {
             this.durNum = 1;
@@ -827,6 +828,10 @@
                 return 3 / (2 * this.durDen);
             }
             return this.durNum / this.durDen;
+        };
+
+        this.getHasStepLines = function () {
+            return this.hasStepLines;
         };
 
         this.getNote = function () {
@@ -938,7 +943,7 @@
                     let stepCount = Math.floor(Math.abs(portePos));
                     for (let i = 0; i < stepCount; i++) {
                         let lineTop = (i - (portePos % 1)) * porteLiHe;
-                        let stepLine = paper.line(relLeft - porteLiHe / 2, lineTop, relLeft + porteLiHe * 3.5 / 2, lineTop);
+                        let stepLine = paper.line(relLeft - porteLiHe / 2.5, lineTop, relLeft + porteLiHe * 3 / 2, lineTop);
                         stepLine.attr({
                             stroke: lColor,
                             strokeWidth: lThickness
@@ -970,6 +975,10 @@
                 let scaleStr = 's' + scaleFactor + ' 0 0';
 
                 noteBody.transform(translateStr + ' ' + scaleStr);
+                if (stepLines.length) {
+                    this.hasStepLines = true;
+                }
+
                 for (let sl of stepLines) {
                     noteG.add(sl);
                 }
@@ -1442,7 +1451,11 @@
                 });
                 this.notesGroup.add(noteG);
                 this.noteLefts.push(this.startPos + left + leftMargin);
-                leftMargin += noteG.getBBox().width + space;
+                if (note.getHasStepLines()) {
+                    leftMargin += noteG.getBBox().width + space / 4;
+                } else {
+                    leftMargin += noteG.getBBox().width + space;
+                }
                 noteIdx += 1;
             }
             if (!this.isFull()) {
